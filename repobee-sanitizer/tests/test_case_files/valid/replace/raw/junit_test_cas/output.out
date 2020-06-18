@@ -1,0 +1,6 @@
+class StackTest {
+    @Test
+    public void topIsLastPushedValue() {
+        fail("Not implemented");
+    }
+}

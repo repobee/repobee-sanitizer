@@ -1,0 +1,5 @@
+class StackTest {
+    @Test
+    public void topIsLastPushedValue() {
+    }
+}
