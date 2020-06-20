@@ -7,10 +7,15 @@ import pytest
 
 from repobee_sanitizer import _sanitize_file
 
+import repobee_plug as plug
+
 INPUT_FILENAME = "input.in"
 OUTPUT_FILENAME = "output.out"
 
 CUR_DIR = pathlib.Path(__file__).parent
+
+VALID_CASES_BASEDIR = CUR_DIR / "test_case_files" / "valid"
+INVALID_CASES_BASEDIR = CUR_DIR / "test_case_files" / "invalid"
 
 
 def discover_test_cases(test_case_base: pathlib.Path) -> Iterable[pathlib.Path]:
@@ -38,16 +43,25 @@ def generate_valid_test_cases():
     ids = [str(id_.relative_to(VALID_CASES_BASEDIR)) for _, id_ in marked_args]
     return args, ids
 
+def generate_invalid_test_cases():
+    p = pathlib.Path(INVALID_CASES_BASEDIR).glob("**/.in")
+    return [read_invalid_test_case_file(x.name) for x in p if x.is_file() ]
 
 def read_valid_test_case_files(test_case_dir: pathlib.Path) -> Tuple[str, str]:
     inp = (test_case_dir / INPUT_FILENAME).read_text(encoding="utf8")
     out = (test_case_dir / OUTPUT_FILENAME).read_text(encoding="utf8")
     return inp, out
 
+def read_invalid_test_case_file(test_file_name: pathlib.Path) -> str:
+    return (INVALID_CASES_BASEDIR / test_file_name).read_text(encoding="utf8")
 
-VALID_CASES_BASEDIR = CUR_DIR / "test_case_files" / "valid"
 VALID_TEST_CASE_ARGS, VALID_TEST_CASE_IDS = generate_valid_test_cases()
+INVALID_TEST_CASE_CONTENT = generate_invalid_test_cases()
 
+@pytest.ark.parametrize("inp", INVALID_TEST_CASE_CONTENT)
+def test_sanitize_vinalid(inp: str):
+    with pytest.Raises(plug.PlugError("Invalid marker syntax")):
+        assert _sanitize_file.sanitize(inp)
 
 @pytest.mark.parametrize("inp,expected", VALID_TEST_CASE_ARGS, ids=VALID_TEST_CASE_IDS)
 def test_sanitize_valid(inp: str, expected: str):
@@ -56,4 +70,3 @@ def test_sanitize_valid(inp: str, expected: str):
     hook.
     """
     assert _sanitize_file.sanitize(inp) == expected
-
