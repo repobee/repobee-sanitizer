@@ -67,7 +67,7 @@ INVALID_TEST_CASE_ARGS, INVALID_TEST_CASE_IDS = generate_invalid_test_cases()
 )
 def test_sanitize_invalid(inp: str):
     with pytest.raises(plug.PlugError):
-        assert _sanitize_file.sanitize(inp)
+        _sanitize_file.sanitize(inp)
 
 
 @pytest.mark.parametrize(
