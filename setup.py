@@ -5,11 +5,7 @@ with open("README.md", mode="r", encoding="utf-8") as f:
     readme = f.read()
 
 # parse the version instead of importing it to avoid dependency-related crashes
-with open(
-    "repobee_sanitizer/__version.py",
-    mode="r",
-    encoding="utf-8",
-) as f:
+with open("repobee_sanitizer/__version.py", mode="r", encoding="utf-8",) as f:
     line = f.readline()
     __version__ = line.split("=")[1].strip(" '\"\n")
     assert re.match(r"^\d+(\.\d+){2}(-(alpha|beta|rc)(\.\d+)?)?$", __version__)
@@ -20,14 +16,13 @@ required = ["repobee-plug"]
 setup(
     name="repobee-sanitizer",
     version=__version__,
-    description="A plugin for RepoBee to sanitize master repositories before being pushed to students",
+    description="A plugin for RepoBee to sanitize master repositories before "
+    "being pushed to students",
     long_description=readme,
     long_description_content_type="text/markdown",
     author="Simon Larsén",
     author_email="slarse@slar.se",
-    url="https://github.com/"
-    "repobee"
-    "/repobee-sanitizer",
+    url="https://github.com/" "repobee" "/repobee-sanitizer",
     download_url="https://github.com/"
     "repobee"
     "/repobee-sanitizer"
