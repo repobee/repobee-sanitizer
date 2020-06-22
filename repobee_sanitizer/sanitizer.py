@@ -1,14 +1,11 @@
 """The plugin module for repobee-sanitizer.
 
 .. module:: sanitizer
-    :synopsis: A plugin for RepoBee to sanitize master repositories before being pushed to students.
+    :synopsis: A plugin for RepoBee to sanitize master repositories before
+        being pushed to students.
 
 .. moduleauthor:: Simon Larsén
 """
-
-import pathlib
-import os
-
 
 import argparse
 import configparser
@@ -53,7 +50,9 @@ class AdvancedExtensionCommand(plug.Plugin):
         # do whatever you want to do!
         return {
             PLUGIN_NAME: [
-                plug.Result(name=PLUGIN_NAME, status=plug.Status.SUCCESS, msg=str(args))
+                plug.Result(
+                    name=PLUGIN_NAME, status=plug.Status.SUCCESS, msg=str(args)
+                )
             ]
         }
 
@@ -66,7 +65,9 @@ class AdvancedExtensionCommand(plug.Plugin):
         if PLUGIN_NAME not in config_parser:
             return
 
-        self._name = config_parser.get(PLUGIN_NAME, "name", fallback=self._name)
+        self._name = config_parser.get(
+            PLUGIN_NAME, "name", fallback=self._name
+        )
         self._age = config_parser.get(PLUGIN_NAME, "age", fallback=self._age)
 
     def create_extension_command(self) -> plug.ExtensionCommand:
@@ -99,4 +100,3 @@ class AdvancedExtensionCommand(plug.Plugin):
                 plug.BaseParser.STUDENTS,
             ],
         )
-
