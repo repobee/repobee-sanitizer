@@ -66,7 +66,7 @@ INVALID_TEST_CASE_ARGS, INVALID_TEST_CASE_IDS = generate_invalid_test_cases()
     "inp", INVALID_TEST_CASE_ARGS, ids=INVALID_TEST_CASE_IDS
 )
 def test_sanitize_invalid(inp: str):
-    with pytest.Raises(plug.PlugError("Invalid marker syntax")):
+    with pytest.raises(plug.PlugError):
         assert _sanitize_file.sanitize(inp)
 
 
