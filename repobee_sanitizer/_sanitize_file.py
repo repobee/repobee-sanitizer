@@ -23,16 +23,12 @@ def sanitize(content: str) -> str:
         A sanitized version of the input.
     """
     lines = list(content.split("\n"))
-    check_syntax(lines)
+    _check_syntax(lines)
     sanitized_string = _sanitize(lines)
     return "\n".join(sanitized_string)
 
 
-# Whitespace cannot be a prefix for SANITIZER
-# Prefix is defined at a START block
-
-
-def check_syntax(lines: List[str]) -> Iterable[str]:
+def _check_syntax(lines: List[str]) -> None:
     last = END_BLOCK
     errors = []
     prefix = ""
