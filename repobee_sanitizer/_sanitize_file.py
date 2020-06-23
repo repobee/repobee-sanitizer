@@ -32,15 +32,14 @@ def sanitize(content: str) -> str:
     return "\n".join(sanitized_string)
 
 
-# ADD THIS LATER TO CHECK_SYNTAX
-# if re.match(r"(.*?)prefix", "line").group(1) != "":
-#   raise plug.PlugError
+# Whitespace cannot be a prefix for SANITIZER
 
 
 def check_syntax(lines: list):
     last = ""
     current_line = 0
     errors = []
+    prefix = ""
     for line in lines:
         current_line += 1
 
@@ -50,6 +49,7 @@ def check_syntax(lines: list):
                     f"Line {current_line}: "
                     "START block must begin file or follow an END block"
                 )
+            prefix = re.match(rf"(.*?){START_BLOCK}", line).group(1)
             last = START_BLOCK
             continue
 
@@ -71,6 +71,10 @@ def check_syntax(lines: list):
             last = END_BLOCK
             continue
 
+        if last == REPLACE_WITH or END_BLOCK in line:
+            if re.match(rf"(.*?){prefix}", line).group(1) != "":
+                raise plug.PlugError(["Missmatching prefixes"])
+
     if last != END_BLOCK and last != "":
         errors.append("Final block must be an END block")
 
@@ -84,7 +88,7 @@ def create_sanitized_string_as_generetor(lines: list):
     prefix_length = 0
     for line in lines:
         if START_BLOCK in line:
-            prefix = re.match(r"(.*?)REPOBEE-SANITIZER-BLOCK", line).group(1)
+            prefix = re.match(rf"(.*?){START_BLOCK}", line).group(1)
             prefix_length = len(prefix)
             keep = False
         elif REPLACE_WITH in line or END_BLOCK in line:
