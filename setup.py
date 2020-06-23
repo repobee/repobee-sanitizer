@@ -10,7 +10,7 @@ with open("repobee_sanitizer/__version.py", mode="r", encoding="utf-8",) as f:
     __version__ = line.split("=")[1].strip(" '\"\n")
     assert re.match(r"^\d+(\.\d+){2}(-(alpha|beta|rc)(\.\d+)?)?$", __version__)
 
-test_requirements = ["pytest", "repobee"]
+test_requirements = ["pytest", "repobee", "pytest-cov"]
 required = ["repobee-plug"]
 
 setup(
