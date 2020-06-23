@@ -22,7 +22,7 @@ def sanitize(content: str) -> str:
     Returns:
         A sanitized version of the input.
     """
-    lines = list(content.split("\n"))
+    lines = content.split("\n")
     _check_syntax(lines)
     sanitized_string = _sanitize(lines)
     return "\n".join(sanitized_string)
