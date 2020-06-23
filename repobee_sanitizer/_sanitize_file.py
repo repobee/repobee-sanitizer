@@ -33,6 +33,7 @@ def sanitize(content: str) -> str:
 
 
 # Whitespace cannot be a prefix for SANITIZER
+# Prefix is defined at a START block
 
 
 def check_syntax(lines: list):
@@ -72,8 +73,10 @@ def check_syntax(lines: list):
             continue
 
         if last == REPLACE_WITH or END_BLOCK in line:
-            if re.match(rf"(.*?){prefix}", line).group(1) != "":
-                raise plug.PlugError(["Missmatching prefixes"])
+            if prefix not in line:
+                errors.append(f"Line {current_line}: Missing prefix")
+            elif re.match(rf"(.*?){prefix}", line).group(1) != "":
+                errors.append(f"Line {current_line}: Missmatching prefix")
 
     if last != END_BLOCK and last != "":
         errors.append("Final block must be an END block")
