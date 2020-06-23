@@ -45,8 +45,6 @@ def check_syntax(lines: List[str]) -> Iterable[str]:
                 )
             prefix = re.match(rf"(.*?){START_BLOCK}", line).group(1)
             last = START_BLOCK
-            continue
-
         elif REPLACE_WITH in line:
             if last != START_BLOCK:
                 errors.append(
@@ -54,8 +52,6 @@ def check_syntax(lines: List[str]) -> Iterable[str]:
                     "REPLACE-WITH block must follow START block"
                 )
             last = REPLACE_WITH
-            continue
-
         elif END_BLOCK in line:
             if last not in [START_BLOCK, REPLACE_WITH]:
                 errors.append(
@@ -63,7 +59,6 @@ def check_syntax(lines: List[str]) -> Iterable[str]:
                     "END block must follow START or REPLACE block"
                 )
             last = END_BLOCK
-            continue
 
         if (last == REPLACE_WITH or END_BLOCK in line) and not line.startswith(
             prefix
