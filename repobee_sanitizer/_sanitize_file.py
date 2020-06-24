@@ -29,10 +29,6 @@ def sanitize(content: str) -> str:
 
 
 def _check_syntax(lines: List[str]) -> None:
-
-    if True:
-        print("HELLO")
-
     last = END_BLOCK
     errors = []
     prefix = ""
