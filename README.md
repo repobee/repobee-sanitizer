@@ -39,7 +39,17 @@ REPOBEE-SANITIZER-END
     }
 }
 ```
->Example 1: For this .java test file, the `santize-file` command will identify the START and END markers, and proceed to remove the code inbetween.
+>Example 1: The simplest usage of `repobee-sanitizer` using a .java file
+
+For this .java test file, the `santize-file` command will identify the START and END markers, and proceed to remove the code inbetween. The result will look like this:
+
+```
+class StackTest {
+    @Test
+    public void topIsLastPushedValue() {
+    }
+}
+```
 
 `repobee-sanitizer` also supports the `REPOBEE-SANITIZER-REPLACE-WITH` marker. By adding a replace marker, we can specify code that should replace the removed code. Example as follows:
 
@@ -121,6 +131,7 @@ class StackTest {
 * Determines prefix as any text that comes before `REPOBEE-SANITIZER-BLOCK`
 * Only determines prefix on a block-to-block basis, meaning that the prefix selected at a `BLOCK` marker must be used untill and including the next `END` marker 
     * This means that all `repobee-sanitizer` blocks can have individuall prefixes
+* Code between replace and end markers **MUST** also be prefixed
 
 
 # Syntax
