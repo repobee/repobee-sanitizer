@@ -3,17 +3,6 @@ A plugin for RepoBee to sanitize template repositories before being pushed to st
 `repobee-sanitizer` adds the commands `sanitize-file` and `sanitize-repo` that lets the user sanitize files and repos (directories currently) respectively.
 `repobee-sanitizer` can remove or replace text by going through files, looking for certain `REPOBEE-SANITIZER-<type>` text-markers. The most simple usage consists of a `REPOBEE-SANITIZER-BLOCK` and a `REPOBEE-SANITIZER-END` marker, where content between these two markers will be removes, or "santitized".
 
-# Install
-
-[WIP]
-
-# Usage
-`repobee-sanitizer` is currently under development, it currently supports the `sanitize-file` and `sanitize-repo` commands. Because `repobee-sanitizer` is a plugin to `repobee`, these commands are executed by running repobee with:
-
-> repobee -p repobee-sanitizer sanitize-repo
-
-(is this right?)
-
 # Example use cases
 Consider the following code:
 
@@ -90,12 +79,12 @@ class StackTest {
 }
 ````
 
-> Example 3: Skeletonized code that is provided to students.
+> Example 3: Sanitized code that is provided to students.
 
 We can see that the only code that remains inside the function is that of the `REPLACE-WITH` marker. This gives us the main usage that `repobee-santizer` was developed for, it allows us to combine finished solutions with the "skeletonized" solutions that are provided to students.
 
 # Prefixing
-Sometimes (usually) we want code that can run, its a good thing then that `repobee-sanitizer` blocks can be commented out! Example two will produce the same output as the following:
+Sometimes (usually) we want code that can run, its a good thing then that `repobee-sanitizer` blocks can be commented out! Example 2 will produce the same output as the following:
 
 ````
 class StackTest {
@@ -151,7 +140,3 @@ If a marker is incorrectly spelled, `repobee-sanitizer` will report an error.
 
 # License
 See [LICENSE](LICENSE) for details.
-
-# Terminology
-Block
-Marker
