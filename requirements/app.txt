@@ -1,0 +1,1 @@
+repobee_plug==0.12.0
