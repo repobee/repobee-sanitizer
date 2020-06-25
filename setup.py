@@ -22,7 +22,7 @@ setup(
     long_description_content_type="text/markdown",
     author="Simon Larsén",
     author_email="slarse@slar.se",
-    url="https://github.com/" "repobee" "/repobee-sanitizer",
+    url="https://github.com/repobee/repobee-sanitizer",
     download_url="https://github.com/"
     "repobee"
     "/repobee-sanitizer"
