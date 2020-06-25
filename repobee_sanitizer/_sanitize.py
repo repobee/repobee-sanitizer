@@ -18,7 +18,7 @@ def sanitize(content: str) -> str:
     """Create a sanitized version of the input.
 
     Args:
-        content: File content to be sanitized.
+        content: Raw file content to be sanitized.
     Returns:
         A sanitized version of the input.
     """
