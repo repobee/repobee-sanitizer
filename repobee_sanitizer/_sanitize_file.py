@@ -1,85 +1,58 @@
-"""File sanitization module.
+"""Extension command that provides functionality for sanitizing a single file.
 
 .. module:: _sanitize_file
-    :synopsis: Module for file sanitization functionality.
-
-.. moduleauthor:: Simon Larsén
+    :synopsis: Extension command that provides functionality for
+        sanitizing a single file.
 """
-import re
+
+import argparse
+import pathlib
+from typing import List, Mapping, Optional
+
 import repobee_plug as plug
-from typing import List, Iterable
 
-START_BLOCK = "REPOBEE-SANITIZER-BLOCK"
-REPLACE_WITH = "REPOBEE-SANITIZER-REPLACE-WITH"
-END_BLOCK = "REPOBEE-SANITIZER-END"
+from repobee_sanitizer import _sanitize
 
 
-def sanitize(content: str) -> str:
-    """Create a sanitized version of the input.
-
-    Args:
-        content: File content to be sanitized.
-    Returns:
-        A sanitized version of the input.
-    """
-    lines = content.split("\n")
-    _check_syntax(lines)
-    sanitized_string = _sanitize(lines)
-    return "\n".join(sanitized_string)
+PLUGIN_NAME = "sanitizer"
 
 
-def _check_syntax(lines: List[str]) -> None:
-    last = END_BLOCK
-    errors = []
-    prefix = ""
-    for line_number, line in enumerate(lines, start=1):
-        if START_BLOCK in line:
-            if last != END_BLOCK:
-                errors.append(
-                    f"Line {line_number}: "
-                    "START block must begin file or follow an END block"
-                )
-            prefix = re.match(rf"(.*?){START_BLOCK}", line).group(1)
-            last = START_BLOCK
-        elif REPLACE_WITH in line:
-            if last != START_BLOCK:
-                errors.append(
-                    f"Line {line_number}: "
-                    "REPLACE-WITH block must follow START block"
-                )
-            last = REPLACE_WITH
-        elif END_BLOCK in line:
-            if last not in [START_BLOCK, REPLACE_WITH]:
-                errors.append(
-                    f"Line {line_number}: "
-                    "END block must follow START or REPLACE block"
-                )
-            last = END_BLOCK
+class SanitizeFile(plug.Plugin):
+    def _sanitize_file(
+        self, args: argparse.Namespace, api: plug.API
+    ) -> Optional[Mapping[str, List[plug.Result]]]:
+        """A callback function that does nothing useful.
 
-        if (last == REPLACE_WITH or END_BLOCK in line) and not line.startswith(
-            prefix
-        ):
-            errors.append(f"Line {line_number}: Missing prefix")
+        Args:
+            args: Parsed and processed args from the RepoBee CLI.
+            api: A platform API instance.
+        Returns:
+            A mapping (str -> List[plug.Result]) that RepoBee's CLI can use for
+            output.
+        """
+        text = args.infile.read_text(encoding="utf8")
+        result = _sanitize.sanitize(text)
+        args.outfile.write_text(result, encoding="utf8")
 
-    if last != END_BLOCK:
-        errors.append("Final block must be an END block")
-
-    if errors:
-        raise plug.PlugError(errors)
-
-
-def _sanitize(lines: List[str]) -> Iterable[str]:
-    keep = True
-    prefix_length = 0
-    for line in lines:
-        if START_BLOCK in line:
-            prefix = re.match(rf"(.*?){START_BLOCK}", line).group(1)
-            prefix_length = len(prefix)
-            keep = False
-        elif REPLACE_WITH in line or END_BLOCK in line:
-            if END_BLOCK in line:
-                prefix_length = 0
-            keep = True
-            continue
-        if keep:
-            yield line[prefix_length:]
+    @plug.repobee_hook
+    def create_extension_command(self) -> plug.ExtensionCommand:
+        parser = plug.ExtensionParser()
+        parser.add_argument(
+            "infile", help="File to sanitize", type=pathlib.Path,
+        )
+        parser.add_argument(
+            "outfile", help="Output path", type=pathlib.Path,
+        )
+        return plug.ExtensionCommand(
+            parser=parser,
+            name="sanitize-file",
+            help="Sanitizes files",
+            description=(
+                "Iterate over files, removing"
+                "code between certain START- and END-markers"
+                ", also supporting REPLACE-WITH markers."
+                "This allows a file to contain two versions"
+                "at the same time"
+            ),
+            callback=self._sanitize_file,
+        )

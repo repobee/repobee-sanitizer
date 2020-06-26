@@ -13,7 +13,7 @@ from typing import Optional, Mapping, List
 import repobee_plug as plug
 import daiquiri
 
-from repobee_sanitizer import _sanitize_file
+from repobee_sanitizer import _sanitize
 
 _ASSUMED_ENCODING = "utf8"
 
@@ -40,7 +40,7 @@ class SanitizeRepo(plug.Plugin):
 
         for file in files:
             text = file.read_text(encoding=_ASSUMED_ENCODING)
-            sanitized_text = _sanitize_file.sanitize(text)
+            sanitized_text = _sanitize.sanitize(text)
             file.write_text(sanitized_text)
             LOGGER.info(f"Sanitized {file}")
 
