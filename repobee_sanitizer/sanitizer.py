@@ -13,6 +13,8 @@ from typing import List, Mapping, Optional
 
 import repobee_plug as plug
 
+from repobee_sanitizer._sanitize_repo import SanitizeRepo  # noqa: F401
+
 PLUGIN_NAME = "sanitizer"
 
 

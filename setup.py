@@ -11,7 +11,7 @@ with open("repobee_sanitizer/__version.py", mode="r", encoding="utf-8",) as f:
     assert re.match(r"^\d+(\.\d+){2}(-(alpha|beta|rc)(\.\d+)?)?$", __version__)
 
 test_requirements = ["pytest", "repobee", "pytest-cov"]
-required = ["repobee-plug"]
+required = ["repobee>=3.0.0-alpha.1"]
 
 setup(
     name="repobee-sanitizer",
@@ -22,7 +22,7 @@ setup(
     long_description_content_type="text/markdown",
     author="Simon Larsén",
     author_email="slarse@slar.se",
-    url="https://github.com/" "repobee" "/repobee-sanitizer",
+    url="https://github.com/repobee/repobee-sanitizer",
     download_url="https://github.com/"
     "repobee"
     "/repobee-sanitizer"
