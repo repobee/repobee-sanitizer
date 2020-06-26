@@ -32,7 +32,7 @@ class SanitizeRepo(plug.Plugin):
             raise plug.PlugError(f"No such file: {args.file_list}")
 
         files = [
-            pathlib.Path(p.strip())
+            args.repo_root / p.strip()
             for p in args.file_list.read_text(encoding=_ASSUMED_ENCODING)
             .strip()
             .split("\n")
@@ -57,6 +57,12 @@ class SanitizeRepo(plug.Plugin):
             type=pathlib.Path,
             metavar="<path>",
             required=True,
+        )
+        parser.add_argument(
+            "--repo-root",
+            help="Path to the worktree root of the repository to sanitize.",
+            type=pathlib.Path,
+            default=pathlib.Path("."),
         )
         return plug.ExtensionCommand(
             parser=parser,

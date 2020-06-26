@@ -2,8 +2,18 @@
 import sys
 import pathlib
 import pytest
+import repobee
 
 sys.path.append(str(pathlib.Path(__file__).parent / "helpers"))
+
+
+@pytest.fixture(autouse=True)
+def unregister_plugins():
+    """Fixture that automatically unregisters all plugins after each test
+    function. This is important for the end-to-end tests.
+    """
+    repobee.unregister_all_plugins()
+
 
 @pytest.fixture
 def sanitizer_config(tmpdir):
