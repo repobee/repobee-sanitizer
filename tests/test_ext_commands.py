@@ -14,6 +14,27 @@ _FakeRepoInfo = collections.namedtuple(
 )
 
 
+def test_sanitize_valid_file(sanitizer_config, tmpdir):
+    test_case_dir = (
+        testhelpers.VALID_CASES_BASEDIR
+        / "replace"
+        / "prefixed"
+        / "junit_test_case"
+    )
+    inp_text, out_text = testhelpers.read_valid_test_case_files(test_case_dir)
+
+    infile = pathlib.Path(tmpdir) / "input.in"
+    infile.write_text(inp_text)
+    outfile = pathlib.Path(tmpdir) / "output.out"
+
+    repobee.main(
+        f"repobee --config-file {sanitizer_config} sanitize-file "
+        f"{infile} {outfile}".split()
+    )
+
+    assert outfile.read_text(encoding="utf8") == out_text
+
+
 def test_sanitize_repo_dictate_mode(sanitizer_config, fake_repo):
     """Test sanitize repo with a list of files to sanitize."""
     repobee.main(
