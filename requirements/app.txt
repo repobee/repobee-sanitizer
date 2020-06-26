@@ -1,1 +1,1 @@
-repobee_plug==0.12.0
+repobee>=3.0.0-alpha.1
