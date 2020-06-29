@@ -1,5 +1,6 @@
 import collections
 import pathlib
+import sys
 
 import pytest
 import git
@@ -103,6 +104,34 @@ def test_sanitize_repo_commits_to_existing_target_branch(
 
     fake_repo.repo.git.checkout(target_branch)
     assert_expected_text_in_files(fake_repo.file_infos)
+
+
+def test_sanitize_repo_commits_non_processed_files_to_target_branch(
+    sanitizer_config, fake_repo
+):
+    """sanitize-repo should not only commit the sanitized files, but also any
+    other files that happend to be in the repo.
+    """
+    target_branch = "student-version"
+    other_file_contents = "Some boring\ncontents in a non-interesting\nfile"
+    other_file = fake_repo.path / "some-other-file.txt"
+    other_file.write_text(other_file_contents)
+    fake_repo.repo.git.add(str(other_file))
+    fake_repo.repo.git.commit("-m", "'Add other file'")
+
+    repobee.main(
+        f"repobee --config-file {sanitizer_config} sanitize-repo "
+        f"--file-list {fake_repo.file_list_path} "
+        f"--target-branch {target_branch} "
+        f"--repo-root {fake_repo.path}".split()
+    )
+
+    # note that "other_file" is tracked on the current branch, and so if it's
+    # not on the target branch it will disappear from the worktree
+    fake_repo.repo.git.checkout(target_branch)
+    assert (
+        other_file.read_text(sys.getdefaultencoding()) == other_file_contents
+    )
 
 
 @pytest.fixture
