@@ -8,10 +8,10 @@ import repobee
 import testhelpers
 
 _FileInfo = collections.namedtuple(
-    "_FileInfo", "expected_text abspath relpath".split()
+    "_FileInfo", "original_text expected_text abspath relpath".split()
 )
 _FakeRepoInfo = collections.namedtuple(
-    "_FakeRepoInfo", "repo path file_list_path file_infos"
+    "_FakeRepoInfo", "repo path file_list_path file_infos default_branch"
 )
 
 
@@ -36,17 +36,56 @@ def test_sanitize_valid_file(sanitizer_config, tmpdir):
     assert outfile.read_text(encoding="utf8") == out_text
 
 
-def test_sanitize_repo_dictate_mode_dry_run(sanitizer_config, fake_repo):
+def test_sanitize_repo_dictate_mode_no_commit(sanitizer_config, fake_repo):
     """Test sanitize repo with a list of files to sanitize in current working
     tree of the repository.
     """
     repobee.main(
         f"repobee --config-file {sanitizer_config} sanitize-repo "
-        "--dry-run "
+        "--no-commit "
         f"--file-list {fake_repo.file_list_path} "
         f"--repo-root {fake_repo.path}".split()
     )
 
+    asserted = False
+    for file_info in fake_repo.file_infos:
+        asserted = True
+        assert file_info.abspath.read_text("utf8") == file_info.expected_text
+    assert asserted
+
+
+def test_sanitize_repo_with_target_branch_does_not_mutate_worktree(
+    sanitizer_config, fake_repo
+):
+    """Test that sanitize-repo does not mutate the current worktree when given
+    a target branch.
+    """
+    target_branch = "student-version"
+    repobee.main(
+        f"repobee --config-file {sanitizer_config} sanitize-repo "
+        f"--file-list {fake_repo.file_list_path} "
+        f"--target-branch {target_branch} "
+        f"--repo-root {fake_repo.path}".split()
+    )
+
+    assert fake_repo.repo.git.diff(fake_repo.repo.head.commit) == ""
+
+
+def test_sanitize_repo_commits_to_non_existing_target_branch(
+    sanitizer_config, fake_repo
+):
+    """Test that sanitize-repo commits the sanitized files to the target
+    branch when the target branch does not exist prior to the commit.
+    """
+    target_branch = "student-version"
+    repobee.main(
+        f"repobee --config-file {sanitizer_config} sanitize-repo "
+        f"--file-list {fake_repo.file_list_path} "
+        f"--target-branch {target_branch} "
+        f"--repo-root {fake_repo.path}".split()
+    )
+
+    fake_repo.repo.git.checkout(target_branch)
     asserted = False
     for file_info in fake_repo.file_infos:
         asserted = True
@@ -66,23 +105,27 @@ def fake_repo(tmpdir) -> _FakeRepoInfo:
         output_path.write_text(input_text)
         file_infos.append(
             _FileInfo(
+                original_text=input_text,
                 expected_text=expected_output_text,
                 abspath=fake_repo_path / id_,
                 relpath=pathlib.Path(id_),
             )
         )
 
-    fake_repo = git.Repo.init(tmpdir)
-    fake_repo.git.add(".")
-    fake_repo.git.commit("-m", "'Initial commit'")
-
     file_list = fake_repo_path / "file_list.txt"
     file_list_content = "\n".join([str(c.relpath) for c in file_infos])
     file_list.write_text(file_list_content)
+
+    default_branch = "develop"
+    fake_repo = git.Repo.init(tmpdir)
+    fake_repo.git.symbolic_ref("HEAD", f"refs/heads/{default_branch}")
+    fake_repo.git.add(".")
+    fake_repo.git.commit("-m", "'Initial commit'")
 
     return _FakeRepoInfo(
         repo=fake_repo,
         path=fake_repo_path,
         file_list_path=file_list,
         file_infos=file_infos,
+        default_branch=default_branch,
     )
