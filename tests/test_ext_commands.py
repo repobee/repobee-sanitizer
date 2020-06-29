@@ -47,11 +47,7 @@ def test_sanitize_repo_dictate_mode_no_commit(sanitizer_config, fake_repo):
         f"--repo-root {fake_repo.path}".split()
     )
 
-    asserted = False
-    for file_info in fake_repo.file_infos:
-        asserted = True
-        assert file_info.abspath.read_text("utf8") == file_info.expected_text
-    assert asserted
+    assert_expected_text_in_files(fake_repo.file_infos)
 
 
 def test_sanitize_repo_with_target_branch_does_not_mutate_worktree(
@@ -86,11 +82,7 @@ def test_sanitize_repo_commits_to_non_existing_target_branch(
     )
 
     fake_repo.repo.git.checkout(target_branch)
-    asserted = False
-    for file_info in fake_repo.file_infos:
-        asserted = True
-        assert file_info.abspath.read_text("utf8") == file_info.expected_text
-    assert asserted
+    assert_expected_text_in_files(fake_repo.file_infos)
 
 
 @pytest.fixture
@@ -129,3 +121,11 @@ def fake_repo(tmpdir) -> _FakeRepoInfo:
         file_infos=file_infos,
         default_branch=default_branch,
     )
+
+
+def assert_expected_text_in_files(file_infos):
+    asserted = False
+    for file_info in file_infos:
+        asserted = True
+        assert file_info.abspath.read_text("utf8") == file_info.expected_text
+    assert asserted, "Loop not run, test error"
