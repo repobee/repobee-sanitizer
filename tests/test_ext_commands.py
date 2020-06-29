@@ -85,6 +85,26 @@ def test_sanitize_repo_commits_to_non_existing_target_branch(
     assert_expected_text_in_files(fake_repo.file_infos)
 
 
+def test_sanitize_repo_commits_to_existing_target_branch(
+    sanitizer_config, fake_repo
+):
+    """Test that sanitize-repo commits the sanitized files to the target branch
+    when the target branch all ready exists.
+    """
+    target_branch = "student-version"
+    fake_repo.repo.git.branch(target_branch)
+
+    repobee.main(
+        f"repobee --config-file {sanitizer_config} sanitize-repo "
+        f"--file-list {fake_repo.file_list_path} "
+        f"--target-branch {target_branch} "
+        f"--repo-root {fake_repo.path}".split()
+    )
+
+    fake_repo.repo.git.checkout(target_branch)
+    assert_expected_text_in_files(fake_repo.file_infos)
+
+
 @pytest.fixture
 def fake_repo(tmpdir) -> _FakeRepoInfo:
     """Setup a fake repository to sanitize."""
