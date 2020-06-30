@@ -97,11 +97,11 @@ class SanitizeRepo(plug.Plugin):
 
 
 def _sanitize_files(
-    root: pathlib.Path, file_relpaths: List[pathlib.Path]
+    basedir: pathlib.Path, file_relpaths: List[pathlib.Path]
 ) -> None:
     """Sanitize the provided files."""
     for relpath in file_relpaths:
-        file = root / relpath
+        file = basedir / relpath
         text = file.read_text(encoding=_ASSUMED_ENCODING)
         sanitized_text = _sanitize.sanitize(text)
         file.write_text(sanitized_text)
