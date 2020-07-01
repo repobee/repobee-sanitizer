@@ -140,19 +140,15 @@ def test_sanitize_repo_commits_non_processed_files_to_target_branch(
 def test_sanitize_repo_returns_fail_when_repo_has_staged_changes(
     sanitizer_config, fake_repo
 ):
-    new_file = fake_repo.path / "test.txt"
-    new_file.write_text("This is the old text")
-    fake_repo.repo.git.add(new_file)
-    fake_repo.repo.git.commit("-m", "Commit original file")
-
-    new_file.write_text("this is  the new text!")
-    fake_repo.repo.git.add(new_file)
+    tracked_file = fake_repo.file_infos[0].abspath
+    tracked_file.write_text("this is  the new text!")
+    fake_repo.repo.git.add(tracked_file)
 
     sanitize_repo = sanitizer.SanitizeRepo()
     cmd = sanitize_repo.create_extension_command()
     args = cmd.parser.parse_args(
         f"--file-list {fake_repo.file_list_path} --repo-root {fake_repo.path}"
-        " --no-commit ".split()
+        " --no-commit".split()
     )
     result = cmd.callback(args, None)
 
