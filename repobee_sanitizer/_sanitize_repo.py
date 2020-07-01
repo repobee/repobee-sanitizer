@@ -34,12 +34,10 @@ class SanitizeRepo(plug.Plugin):
         if not args.file_list.is_file():
             raise plug.PlugError(f"No such file: {args.file_list}")
 
-        repo = git.Repo.init(args.repo_root)
-        if repo.head.commit.diff():
+        message = _check_repo_state(args.repo_root)
+        if message:
             return plug.Result(
-                name="sanitize-repo",
-                msg="There are uncommited staged files in the repo",
-                status=plug.Status.ERROR,
+                name="sanitize-repo", msg=message, status=plug.Status.ERROR,
             )
 
         file_relpaths = [
@@ -142,6 +140,14 @@ def _sanitize_to_target_branch(
             dst_repo_path=repo_path,
             dst_branch=target_branch,
         )
+
+
+def _check_repo_state(repo_root) -> str:
+    repo = git.Repo.init(repo_root)
+    if repo.head.commit.diff():
+        return "There are uncommited staged files in the repo"
+    else:
+        return None
 
 
 def _git_commit_on_branch(repo_root: pathlib.Path, target_branch: str):
