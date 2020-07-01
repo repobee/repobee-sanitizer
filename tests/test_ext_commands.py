@@ -6,7 +6,10 @@ import pytest
 import git
 import repobee
 
+from repobee_sanitizer import sanitizer
+import repobee_plug as plug
 import testhelpers
+
 
 _FileInfo = collections.namedtuple(
     "_FileInfo", "original_text expected_text abspath relpath".split()
@@ -132,6 +135,28 @@ def test_sanitize_repo_commits_non_processed_files_to_target_branch(
     assert (
         other_file.read_text(sys.getdefaultencoding()) == other_file_contents
     )
+
+
+def test_sanitize_repo_returns_fail_when_repo_has_staged_changes(
+    sanitizer_config, fake_repo
+):
+    new_file = fake_repo.path / "test.txt"
+    new_file.write_text("This is the old text")
+    fake_repo.repo.git.add(new_file)
+    fake_repo.repo.git.commit("-m", "Commit original file")
+
+    new_file.write_text("this is  the new text!")
+    fake_repo.repo.git.add(new_file)
+
+    sanitize_repo = sanitizer.SanitizeRepo()
+    cmd = sanitize_repo.create_extension_command()
+    args = cmd.parser.parse_args(
+        f"--file-list {fake_repo.file_list_path} --repo-root {fake_repo.path}"
+        " --no-commit ".split()
+    )
+    result = cmd.callback(args, None)
+
+    assert result.status == plug.Status.ERROR
 
 
 @pytest.fixture
