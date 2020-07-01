@@ -151,7 +151,23 @@ def test_sanitize_repo_returns_fail_when_repo_has_staged_changes(
     )
 
     assert result.status == plug.Status.ERROR
-    assert "uncommitted staged files" in result.msg
+    assert "staged file" in result.msg
+
+
+def test_sanitize_repo_return_fail_when_has_unstaged_changes(
+    sanitizer_config, fake_repo
+):
+    unstaged_file = fake_repo.file_infos[0].abspath
+    unstaged_file.write_text("This is some new text!")
+
+    result = execute_sanitize_repo(
+        f"--file-list {fake_repo.file_list_path} "
+        f"--repo-root {fake_repo.path} "
+        "--no-commit"
+    )
+
+    assert result.status == plug.Status.ERROR
+    assert "unstaged file" in result.msg
 
 
 def test_sanitize_repo_return_fail_when_has_untracked_files(
