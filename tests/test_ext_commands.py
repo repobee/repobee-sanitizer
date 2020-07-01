@@ -151,6 +151,7 @@ def test_sanitize_repo_returns_fail_when_repo_has_staged_changes(
     )
 
     assert result.status == plug.Status.ERROR
+    assert "uncommitted staged files" in result.msg
 
 
 def execute_sanitize_repo(arguments: str):

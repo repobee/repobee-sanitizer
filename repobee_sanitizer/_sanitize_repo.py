@@ -142,12 +142,11 @@ def _sanitize_to_target_branch(
         )
 
 
-def _check_repo_state(repo_root) -> str:
+def _check_repo_state(repo_root) -> Optional[str]:
     repo = git.Repo.init(repo_root)
     if repo.head.commit.diff():
-        return "There are uncommited staged files in the repo"
-    else:
-        return None
+        return "There are uncommitted staged files in the repo"
+    return None
 
 
 def _git_commit_on_branch(repo_root: pathlib.Path, target_branch: str):
