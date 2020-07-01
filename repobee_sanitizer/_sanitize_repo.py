@@ -146,6 +146,10 @@ def _check_repo_state(repo_root) -> Optional[str]:
     repo = git.Repo.init(repo_root)
     if repo.head.commit.diff():
         return "There are uncommitted staged files in the repo"
+    if repo.untracked_files:
+        return "There are untracked files in the repo"
+    if repo.index.diff(None):
+        return "There are uncommitted unstaged files in the repo"
     return None
 
 
