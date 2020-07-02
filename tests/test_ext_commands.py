@@ -187,6 +187,19 @@ def test_sanitize_repo_return_fail_when_has_untracked_files(
     assert "untracked file" in result.msg
 
 
+def test_plug_error_raised_if_file_list_doesnt_exist(
+    sanitizer_config, fake_repo
+):
+    fake_file_list = fake_repo.path / "fake_file_list.txt"
+
+    with pytest.raises(plug.PlugError):
+        execute_sanitize_repo(
+            f"--file-list {fake_file_list} "
+            f"--repo-root {fake_repo.path} "
+            "--no-commit"
+        )
+
+
 def execute_sanitize_repo(arguments: str):
     """Run the sanitize-repo function with the given arguments"""
     sanitize_repo = sanitizer.SanitizeRepo()
