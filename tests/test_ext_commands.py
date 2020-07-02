@@ -154,6 +154,7 @@ def test_sanitize_repo_returns_fail_when_repo_has_staged_changes(
     assert "uncommitted staged file" in result.msg
 
 
+
 def test_sanitize_repo_return_fail_when_has_unstaged_changes(
     sanitizer_config, fake_repo
 ):
