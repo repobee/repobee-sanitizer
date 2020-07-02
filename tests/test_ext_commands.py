@@ -151,7 +151,7 @@ def test_sanitize_repo_returns_fail_when_repo_has_staged_changes(
     )
 
     assert result.status == plug.Status.ERROR
-    assert "staged file" in result.msg
+    assert "uncommitted staged file" in result.msg
 
 
 def test_sanitize_repo_return_fail_when_has_unstaged_changes(
@@ -167,7 +167,7 @@ def test_sanitize_repo_return_fail_when_has_unstaged_changes(
     )
 
     assert result.status == plug.Status.ERROR
-    assert "unstaged file" in result.msg
+    assert "uncommitted unstaged file" in result.msg
 
 
 def test_sanitize_repo_return_fail_when_has_untracked_files(
