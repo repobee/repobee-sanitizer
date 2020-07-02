@@ -186,7 +186,7 @@ def test_sanitize_repo_return_fail_when_has_untracked_files(
     assert result.status == plug.Status.ERROR
     assert "untracked file" in result.msg
 
-    
+
 def execute_sanitize_repo(arguments: str):
     """Run the sanitize-repo function with the given arguments"""
     sanitize_repo = sanitizer.SanitizeRepo()
