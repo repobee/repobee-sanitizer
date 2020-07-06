@@ -151,7 +151,7 @@ def test_sanitize_repo_returns_fail_when_repo_has_staged_changes(
     )
 
     assert result.status == plug.Status.ERROR
-    assert "staged file" in result.msg
+    assert "uncommitted staged file" in result.msg
 
 
 def test_sanitize_repo_return_fail_when_has_unstaged_changes(
@@ -167,7 +167,7 @@ def test_sanitize_repo_return_fail_when_has_unstaged_changes(
     )
 
     assert result.status == plug.Status.ERROR
-    assert "unstaged file" in result.msg
+    assert "uncommitted unstaged file" in result.msg
 
 
 def test_sanitize_repo_return_fail_when_has_untracked_files(
@@ -202,6 +202,18 @@ def test_sanitize_repo_passes_with_force_flag(sanitizer_config, fake_repo):
 
     assert result.status == plug.Status.SUCCESS
     assert "force" in result.msg
+
+def test_sanitize_repo_raises_plug_error_if_file_list_doesnt_exist(
+    sanitizer_config, fake_repo
+):
+    non_existing_file_list = fake_repo.path / "fake_file_list.txt"
+
+    with pytest.raises(plug.PlugError):
+        execute_sanitize_repo(
+            f"--file-list {non_existing_file_list} "
+            f"--repo-root {fake_repo.path} "
+            "--no-commit"
+        )
 
 
 def execute_sanitize_repo(arguments: str):
