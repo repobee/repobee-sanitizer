@@ -187,7 +187,7 @@ def test_sanitize_repo_return_fail_when_has_untracked_files(
     assert "untracked file" in result.msg
 
 
-def test_plug_error_raised_if_file_list_doesnt_exist(
+def test_sanitize_repo_raises_plug_error_if_file_list_doesnt_exist(
     sanitizer_config, fake_repo
 ):
     non_existing_file_list = fake_repo.path / "fake_file_list.txt"
