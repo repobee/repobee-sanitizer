@@ -1,5 +1,12 @@
+![Build Status](https://github.com/repobee/repobee-sanitizer/workflows/tests/badge.svg)
+[![Code Coverage](https://codecov.io/gh/repobee/repobee-sanitizer/branch/master/graph/badge.svg)](https://codecov.io/gh/repobee/repobee-sanitizer)
+![Supported Python Versions](https://img.shields.io/badge/python-3.6%2C%203.7%2C%203.8-blue.svg)
+![Supported Platforms](https://img.shields.io/badge/platforms-Linux%2C%20macOS-blue.svg)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Code Style: Black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
+
 # repobee-sanitizer
-A plugin for RepoBee to sanitize template repositories before being pushed to students. 
+A plugin for RepoBee to sanitize template repositories before being pushed to students.
 `repobee-sanitizer` adds the commands `sanitize-file` and `sanitize-repo` that lets the user sanitize files and repos (directories currently) respectively.
 `repobee-sanitizer` can remove or replace text by going through files, looking for certain `REPOBEE-SANITIZER-<type>` text-markers. The most simple usage consists of a `REPOBEE-SANITIZER-BLOCK` and a `REPOBEE-SANITIZER-END` marker, where content between these two markers will be removes, or "santitized".
 
@@ -110,7 +117,7 @@ class StackTest {
     }
 }
 ````
-> Example 4: Java code with `repobee-sanitizer` related syntax commented out 
+> Example 4: Java code with `repobee-sanitizer` related syntax commented out
 
 `repobee-sanitizer` automatically detects if there is a prefix in front of any markers. This way we can have java comments: `//`, python comments: `#` or similar preceding our markers. **This means code can still compile!**
 
@@ -118,7 +125,7 @@ class StackTest {
 
 `repobee-sanitizer`:
 * Determines prefix as any text that comes before `REPOBEE-SANITIZER-BLOCK`
-* Only determines prefix on a block-to-block basis, meaning that the prefix selected at a `BLOCK` marker must be used untill and including the next `END` marker 
+* Only determines prefix on a block-to-block basis, meaning that the prefix selected at a `BLOCK` marker must be used untill and including the next `END` marker
     * This means that all `repobee-sanitizer` blocks can have individuall prefixes
 * Code between replace and end markers **MUST** also be prefixed
 
@@ -128,7 +135,7 @@ for `repobee-sanitizer` to work, marker syntax must be correct, this includes sp
 
 - REPOBEE-SANITIZER-BLOCK
     - REQUIRED: A block is not a block without a start marker
-    - Indicates the start of a block. Any text will be removed untill reaching a `REPLACE-WITH` or `END` marker. 
+    - Indicates the start of a block. Any text will be removed untill reaching a `REPLACE-WITH` or `END` marker.
 - REPOBEE-SANITIZER-REPLACE-WITH
     - OPTIONAL: but requires a start and end block.
     - Any text between this marker and the next `END` marker will remain.
@@ -136,7 +143,7 @@ for `repobee-sanitizer` to work, marker syntax must be correct, this includes sp
     - REQUIRED: Must exist for each start block
     - Indicates the end of a block.
 
-If a marker is incorrectly spelled, `repobee-sanitizer` will report an error. 
+If a marker is incorrectly spelled, `repobee-sanitizer` will report an error.
 
 # License
 See [LICENSE](LICENSE) for details.
