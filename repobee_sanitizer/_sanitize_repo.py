@@ -34,11 +34,14 @@ class SanitizeRepo(plug.Plugin):
         if not args.file_list.is_file():
             raise plug.PlugError(f"No such file: {args.file_list}")
 
-        message = _check_repo_state(args.repo_root)
-        if message:
-            return plug.Result(
-                name="sanitize-repo", msg=message, status=plug.Status.ERROR,
-            )
+        if not args.force:
+            message = _check_repo_state(args.repo_root)
+            if message:
+                return plug.Result(
+                    name="sanitize-repo",
+                    msg=message,
+                    status=plug.Status.ERROR,
+                )
 
         file_relpaths = [
             p.strip()
@@ -54,6 +57,13 @@ class SanitizeRepo(plug.Plugin):
             LOGGER.info(f"Sanitizing repo and updating {args.target_branch}")
             _sanitize_to_target_branch(
                 args.repo_root, file_relpaths, args.target_branch
+            )
+
+        if args.force:
+            return plug.Result(
+                name="sanitize-repo",
+                msg="Sanitize-repo was forced",
+                status=plug.Status.SUCCESS,
             )
 
     def create_extension_command(self) -> plug.ExtensionCommand:
@@ -78,6 +88,11 @@ class SanitizeRepo(plug.Plugin):
             type=pathlib.Path,
             metavar="path",
             default=pathlib.Path("."),
+        )
+        parser.add_argument(
+            "--force",
+            help="Allow uncommitted and untracked files",
+            action="store_true",
         )
 
         mode_mutex_grp = parser.add_mutually_exclusive_group(required=True)
