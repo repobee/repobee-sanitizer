@@ -203,6 +203,7 @@ def test_sanitize_repo_passes_with_force_flag(sanitizer_config, fake_repo):
     assert result.status == plug.Status.SUCCESS
     assert "force" in result.msg
 
+
 def test_sanitize_repo_raises_plug_error_if_file_list_doesnt_exist(
     sanitizer_config, fake_repo
 ):
