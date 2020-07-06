@@ -187,6 +187,23 @@ def test_sanitize_repo_return_fail_when_has_untracked_files(
     assert "untracked file" in result.msg
 
 
+def test_sanitize_repo_passes_with_force_flag(sanitizer_config, fake_repo):
+    """Test adds an utracked file to make sure that repobee does not complain
+        when we add --force to the command. Expects success status."""
+    untracked_file = fake_repo.path / "untracked.txt"
+    untracked_file.write_text("This is some untracked text")
+
+    result = execute_sanitize_repo(
+        f"--file-list {fake_repo.file_list_path} "
+        f"--repo-root {fake_repo.path} "
+        "--no-commit "
+        "--force"
+    )
+
+    assert result.status == plug.Status.SUCCESS
+    assert "force" in result.msg
+
+
 def execute_sanitize_repo(arguments: str):
     """Run the sanitize-repo function with the given arguments"""
     sanitize_repo = sanitizer.SanitizeRepo()
