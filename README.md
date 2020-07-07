@@ -15,7 +15,7 @@ A plugin for RepoBee to sanitize template repositories before being pushed to st
 
 Consider the following code:
 
-```
+```java
 class StackTest {
     @Test
     public void topIsLastPushedValue() {
@@ -42,7 +42,7 @@ REPOBEE-SANITIZER-END
 
 For this .java test file, the `santize-file` command will identify the START and END markers, and proceed to remove the code inbetween. The result will look like this:
 
-```
+```java
 class StackTest {
     @Test
     public void topIsLastPushedValue() {
@@ -52,7 +52,7 @@ class StackTest {
 
 `repobee-sanitizer` also supports the `REPOBEE-SANITIZER-REPLACE-WITH` marker. By adding a replace marker, we can specify code that should replace the removed code. Example as follows:
 
-````
+````java
 class StackTest {
     @Test
     public void topIsLastPushedValue() {
@@ -81,7 +81,7 @@ REPOBEE-SANITIZER-END
 
 As we can see in Example 2, this lets us provide two versions of a function, one that is current, and one that will replace it. Example 1 and 2 shows us a piece of code used in the KTH course DD1338. This code is part of an assignment where students are asked to implement a test function. The example shows a finished solution that is availiable to the teachers of the course. However, because of `repobee-sanitizer` and the `REPLACE-WITH` marker, the code can be reduced to the following:
 
-````
+````java
 class StackTest {
     @Test
     public void topIsLastPushedValue() {
@@ -98,7 +98,7 @@ We can see that the only code that remains inside the function is that of the `R
 
 Sometimes (usually) we want code that can run, its a good thing then that `repobee-sanitizer` blocks can be commented out! Example 2 will produce the same output as the following:
 
-````
+````java
 class StackTest {
     @Test
     public void topIsLastPushedValue() {
