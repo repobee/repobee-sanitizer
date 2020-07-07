@@ -193,6 +193,13 @@ def test_sanitize_repo_passes_with_force_flag(sanitizer_config, fake_repo):
     untracked_file = fake_repo.path / "untracked.txt"
     untracked_file.write_text("This is some untracked text")
 
+    unstaged_file = fake_repo.file_infos[0].abspath
+    unstaged_file.write_text("This is some new text!")
+
+    tracked_file = fake_repo.file_infos[0].abspath
+    tracked_file.write_text("this is the new text!")
+    fake_repo.repo.git.add(tracked_file)
+
     result = execute_sanitize_repo(
         f"--file-list {fake_repo.file_list_path} "
         f"--repo-root {fake_repo.path} "
