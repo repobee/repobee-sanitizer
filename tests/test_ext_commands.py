@@ -188,27 +188,44 @@ def test_sanitize_repo_return_fail_when_has_untracked_files(
 
 
 def test_sanitize_repo_passes_with_force_flag(sanitizer_config, fake_repo):
-    """Test adds an utracked file to make sure that repobee does not complain
-        when we add --force to the command. Expects success status."""
+    """Test adds an utracked, unstaged, and staged file to make sure
+    that repobee does not complain when we add --force to the command.
+    Expects these files to NOT exist on target branch, as only
+    committed changes should be sanitized.
+    """
+    untracked_file_content = "This is some untracked text"
     untracked_file = fake_repo.path / "untracked.txt"
-    untracked_file.write_text("This is some untracked text")
+    untracked_file.write_text(untracked_file_content)
 
+    unstaged_file_content = "This is some unstaged text!"
     unstaged_file = fake_repo.file_infos[0].abspath
-    unstaged_file.write_text("This is some new text!")
+    unstaged_file.write_text(unstaged_file_content)
 
-    tracked_file = fake_repo.file_infos[0].abspath
-    tracked_file.write_text("this is the new text!")
-    fake_repo.repo.git.add(tracked_file)
+    staged_file_content = "This file is staged!"
+    staged_file = fake_repo.file_infos[1].abspath
+    staged_file.write_text(staged_file_content)
+    fake_repo.repo.git.add(staged_file)
 
-    result = execute_sanitize_repo(
+    target_branch = "student-version"
+
+    execute_sanitize_repo(
         f"--file-list {fake_repo.file_list_path} "
         f"--repo-root {fake_repo.path} "
-        "--no-commit "
+        f"--target-branch {target_branch} "
         "--force"
     )
 
-    assert result.status == plug.Status.SUCCESS
-    assert "force" in result.msg
+    # Assert that working tree has not been modified
+    assert untracked_file.is_file()
+    assert unstaged_file.read_text() == unstaged_file_content
+    assert staged_file.read_text() == staged_file_content
+
+    fake_repo.repo.git.reset("--hard")
+    fake_repo.repo.git.clean("-dfx")
+
+    fake_repo.repo.git.checkout(target_branch)
+    assert not untracked_file.is_file()
+    assert_expected_text_in_files(fake_repo.file_infos)
 
 
 def test_sanitize_repo_raises_plug_error_if_file_list_doesnt_exist(
