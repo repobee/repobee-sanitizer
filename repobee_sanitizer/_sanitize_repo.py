@@ -34,14 +34,11 @@ class SanitizeRepo(plug.Plugin):
         if not args.file_list.is_file():
             raise plug.PlugError(f"No such file: {args.file_list}")
 
-        if not args.force:
-            message = _check_repo_state(args.repo_root)
-            if message:
-                return plug.Result(
-                    name="sanitize-repo",
-                    msg=message,
-                    status=plug.Status.ERROR,
-                )
+        message = _check_repo_state(args.repo_root)
+        if message and not args.force:
+            return plug.Result(
+                name="sanitize-repo", msg=message, status=plug.Status.ERROR,
+            )
 
         file_relpaths = [
             p.strip()
