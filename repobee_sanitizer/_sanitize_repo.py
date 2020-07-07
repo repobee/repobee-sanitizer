@@ -56,13 +56,6 @@ class SanitizeRepo(plug.Plugin):
                 args.repo_root, file_relpaths, args.target_branch
             )
 
-        if args.force:
-            return plug.Result(
-                name="sanitize-repo",
-                msg="Sanitize-repo was forced",
-                status=plug.Status.SUCCESS,
-            )
-
     def create_extension_command(self) -> plug.ExtensionCommand:
         """
         Returns:
