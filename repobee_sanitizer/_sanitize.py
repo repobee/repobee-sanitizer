@@ -2,8 +2,6 @@
 
 .. module:: _sanitize_file
     :synopsis: Module for file sanitization functionality.
-
-.. moduleauthor:: Simon Larsén
 """
 import re
 import repobee_plug as plug
