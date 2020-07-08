@@ -31,21 +31,19 @@ class SanitizeRepo(plug.Plugin):
     def _sanitize_repo(
         self, args: argparse.Namespace, api: None,
     ) -> Optional[Mapping[str, List[plug.Result]]]:
-        if not args.file_list.is_file():
-            raise plug.PlugError(f"No such file: {args.file_list}")
+
+        if args.file_list:
+            if not args.file_list.is_file():
+                raise plug.PlugError(f"No such file: {args.file_list}")
+            file_relpaths = _parse_file_list(args.file_list)
+        elif args.discover_files:
+            file_relpaths = _discover_dirty_files(args.repo_root)
 
         message = _check_repo_state(args.repo_root)
         if message:
             return plug.Result(
                 name="sanitize-repo", msg=message, status=plug.Status.ERROR,
             )
-
-        file_relpaths = [
-            p.strip()
-            for p in args.file_list.read_text(encoding=_ASSUMED_ENCODING)
-            .strip()
-            .split("\n")
-        ]
 
         if args.no_commit:
             LOGGER.info("Executing dry run")
@@ -107,6 +105,44 @@ class SanitizeRepo(plug.Plugin):
             description="Sanitize the current repository.",
             callback=self._sanitize_repo,
         )
+
+
+def _parse_file_list(file_list) -> List[pathlib.Path]:
+    return [
+        p.strip()
+        for p in file_list.read_text(encoding=_ASSUMED_ENCODING)
+        .strip()
+        .split("\n")
+    ]
+
+
+def _discover_dirty_files(repo_root) -> List[pathlib.Path]:
+    """
+    Returns:
+        A list of relative file paths for files that need to be sanitized.
+    """
+    return [
+        file
+        for file in list(repo_root.rglob("*"))
+        if ".git" not in str(file) and file.is_file() and _file_is_dirty(file)
+    ]
+
+
+def _file_is_dirty(file: pathlib.Path) -> bool:
+    """if a file has ANY block, pass it forward, its syntax will then be
+    checked when sanitized.
+    """
+
+    content = file.read_text(encoding=_ASSUMED_ENCODING).split("\n")
+    for line in content:
+        for block in [
+            "REPOBEE-SANITIZER-BLOCK",
+            "REPOBEE-SANITIZER-REPLACE-WITH",
+            "REPOBEE-SANITIZER-END",
+        ]:
+            if block in line:
+                return True
+    return False
 
 
 def _sanitize_files(
