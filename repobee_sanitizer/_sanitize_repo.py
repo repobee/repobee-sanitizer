@@ -63,21 +63,28 @@ class SanitizeRepo(plug.Plugin):
         """
         parser = plug.ExtensionParser()
         parser.add_argument(
-            "-f",
-            "--file-list",
-            help="Path to a list of files to sanitize. The paths should be "
-            "relative to the root of the repository.",
-            type=pathlib.Path,
-            metavar="path",
-            required=True,
-        )
-        parser.add_argument(
             "-r",
             "--repo-root",
             help="Path to the worktree root of the repository to sanitize.",
             type=pathlib.Path,
             metavar="path",
             default=pathlib.Path("."),
+        )
+
+        files_mutex_grp = parser.add_mutually_exclusive_group(required=True)
+        files_mutex_grp.add_argument(
+            "-f",
+            "--file-list",
+            help="Path to a list of files to sanitize. The paths should be "
+            "relative to the root of the repository.",
+            type=pathlib.Path,
+            metavar="path",
+        )
+        files_mutex_grp.add_argument(
+            "-d",
+            "--discover-files",
+            help="Automatically find files to sanitize",
+            action="store_true",
         )
 
         mode_mutex_grp = parser.add_mutually_exclusive_group(required=True)
