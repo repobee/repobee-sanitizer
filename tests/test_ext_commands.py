@@ -54,6 +54,24 @@ def test_sanitize_repo_dictate_mode_no_commit(sanitizer_config, fake_repo):
     assert_expected_text_in_files(fake_repo.file_infos)
 
 
+def test_sanitize_repo_discover_mode_target_branch(
+    sanitizer_config, fake_repo
+):
+    """Test sanitize repo without a list of file. Sanitizer should instead
+    discover all the files that it should sanitize.
+    """
+    target_branch = "student-version"
+    repobee.main(
+        f"repobee --config-file {sanitizer_config} sanitize-repo "
+        f"--target-branch {target_branch} "
+        f"--discover-files "
+        f"--repo-root {fake_repo.path}".split()
+    )
+
+    fake_repo.repo.git.checkout(target_branch)
+    assert_expected_text_in_files(fake_repo.file_infos)
+
+
 def test_sanitize_repo_with_target_branch_does_not_mutate_worktree(
     sanitizer_config, fake_repo
 ):
