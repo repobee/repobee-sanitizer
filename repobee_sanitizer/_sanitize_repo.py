@@ -39,8 +39,6 @@ class SanitizeRepo(plug.Plugin):
             )
 
         if args.file_list:
-            if not args.file_list.is_file():
-                raise plug.PlugError(f"No such file: {args.file_list}")
             file_relpaths = _parse_file_list(args.file_list)
         elif args.discover_files:
             file_relpaths = _discover_dirty_files(args.repo_root)
@@ -107,6 +105,9 @@ class SanitizeRepo(plug.Plugin):
 
 
 def _parse_file_list(file_list) -> List[pathlib.Path]:
+    if not file_list.is_file():
+        raise plug.PlugError(f"No such file: {file_list}")
+
     return [
         p.strip()
         for p in file_list.read_text(encoding=_ASSUMED_ENCODING)
