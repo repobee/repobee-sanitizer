@@ -31,17 +31,18 @@ class SanitizeRepo(plug.Plugin):
     def _sanitize_repo(
         self, args: argparse.Namespace, api: None,
     ) -> Optional[Mapping[str, List[plug.Result]]]:
-
         message = _check_repo_state(args.repo_root)
         if message:
             return plug.Result(
                 name="sanitize-repo", msg=message, status=plug.Status.ERROR,
             )
 
-        if args.file_list:
-            file_relpaths = _parse_file_list(args.file_list)
-        elif args.discover_files:
-            file_relpaths = _discover_dirty_files(args.repo_root)
+        assert args.file_list or args.discover_files
+        file_relpaths = (
+            _parse_file_list(args.file_list)
+            if args.file_list
+            else _discover_dirty_files(args.repo_root)
+        )
 
         if args.no_commit:
             LOGGER.info("Executing dry run")
