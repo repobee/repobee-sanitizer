@@ -68,7 +68,6 @@ class SanitizeRepo(plug.Plugin):
             metavar="path",
             default=pathlib.Path("."),
         )
-
         files_mutex_grp = parser.add_mutually_exclusive_group(required=True)
         files_mutex_grp.add_argument(
             "-f",
@@ -81,10 +80,10 @@ class SanitizeRepo(plug.Plugin):
         files_mutex_grp.add_argument(
             "-d",
             "--discover-files",
-            help="Automatically find files to sanitize",
+            help="Find and sanitize all files in the repository that contain "
+            "at least one sanitizer marker.",
             action="store_true",
         )
-
         mode_mutex_grp = parser.add_mutually_exclusive_group(required=True)
         mode_mutex_grp.add_argument(
             "-t",
