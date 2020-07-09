@@ -128,10 +128,6 @@ def _discover_dirty_files(repo_root) -> List[pathlib.Path]:
 
 
 def _file_is_dirty(file: pathlib.Path) -> bool:
-    """if a file has ANY block, pass it forward, its syntax will then be
-    checked when sanitized.
-    """
-
     content = file.read_text(encoding=_ASSUMED_ENCODING).split("\n")
     for line in content:
         for block in [
