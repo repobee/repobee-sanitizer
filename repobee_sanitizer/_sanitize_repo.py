@@ -37,7 +37,7 @@ class SanitizeRepo(plug.Plugin):
                 name="sanitize-repo", msg=message, status=plug.Status.ERROR,
             )
 
-        assert args.file_list or args.discover_files
+        assert args.file_list or args.discover_files, "Missing arguments"
         file_relpaths = (
             _parse_file_list(args.file_list)
             if args.file_list
@@ -122,10 +122,12 @@ def _discover_dirty_files(repo_root) -> List[pathlib.Path]:
     Returns:
         A list of relative file paths for files that need to be sanitized.
     """
+    git_dir = repo_root / ".git"
+    assert git_dir, "Not a git repository"
     return [
         file
         for file in list(repo_root.rglob("*"))
-        if ".git" not in str(file) and file.is_file() and _file_is_dirty(file)
+        if file.parts[0] != ".git" and file.is_file() and _file_is_dirty(file)
     ]
 
 
