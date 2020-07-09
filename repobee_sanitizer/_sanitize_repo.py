@@ -130,12 +130,8 @@ def _discover_dirty_files(repo_root) -> List[pathlib.Path]:
 def _file_is_dirty(file: pathlib.Path) -> bool:
     content = file.read_text(encoding=_ASSUMED_ENCODING).split("\n")
     for line in content:
-        for block in [
-            "REPOBEE-SANITIZER-BLOCK",
-            "REPOBEE-SANITIZER-REPLACE-WITH",
-            "REPOBEE-SANITIZER-END",
-        ]:
-            if block in line:
+        for marker in _sanitize.SANITIZER_MARKERS:
+            if marker in line:
                 return True
     return False
 
