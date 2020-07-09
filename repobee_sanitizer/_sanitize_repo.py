@@ -122,12 +122,13 @@ def _discover_dirty_files(repo_root) -> List[pathlib.Path]:
     Returns:
         A list of relative file paths for files that need to be sanitized.
     """
-    git_dir = repo_root / ".git"
-    assert git_dir, "Not a git repository"
+    git_dir_relpath = ".git"
     return [
         file
         for file in list(repo_root.rglob("*"))
-        if file.parts[0] != ".git" and file.is_file() and _file_is_dirty(file)
+        if file.is_file()
+        and (file.relative_to(repo_root).parts[0] != git_dir_relpath)
+        and _file_is_dirty(file)
     ]
 
 
