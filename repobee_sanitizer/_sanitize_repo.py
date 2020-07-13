@@ -17,6 +17,7 @@ import daiquiri
 import git
 
 from repobee_sanitizer import _sanitize
+from repobee_sanitizer import _fileutils
 
 _ASSUMED_ENCODING = "utf8"
 
@@ -39,7 +40,7 @@ class SanitizeRepo(plug.Plugin):
 
         assert args.file_list or args.discover_files, "Missing arguments"
         file_relpaths = (
-            _parse_file_list(args.file_list)
+            _parse_file_list(args.file_list, args.repo_root)
             if args.file_list
             else _discover_dirty_files(args.repo_root)
         )
@@ -112,35 +113,44 @@ class SanitizeRepo(plug.Plugin):
         )
 
 
-def _parse_file_list(file_list: pathlib.Path) -> List[pathlib.Path]:
+def _parse_file_list(
+    file_list: pathlib.Path, repo_root: pathlib.Path
+) -> List[_fileutils.RelativePath]:
     if not file_list.is_file():
         raise plug.PlugError(f"No such file: {file_list}")
 
     return [
-        p.strip()
+        _fileutils.create_relpath(repo_root / p.strip(), repo_root)
         for p in file_list.read_text(encoding=_ASSUMED_ENCODING)
         .strip()
         .split("\n")
     ]
 
 
-def _discover_dirty_files(repo_root: pathlib.Path) -> List[pathlib.Path]:
+def _discover_dirty_files(
+    repo_root: pathlib.Path,
+) -> List[_fileutils.RelativePath]:
     """
     Returns:
         A list of relative file paths for files that need to be sanitized.
     """
     git_dir_relpath = ".git"
-    return [
-        file.relative_to(repo_root)
-        for file in list(repo_root.rglob("*"))
-        if file.is_file()
-        and (file.relative_to(repo_root).parts[0] != git_dir_relpath)
-        and _file_is_dirty(file)
-    ]
+    relpaths = (
+        _fileutils.create_relpath(path, repo_root)
+        for path in repo_root.rglob("*")
+        if path.is_file()
+        and path.relative_to(repo_root).parts[0] != git_dir_relpath
+    )
+    return [sp for sp in relpaths if _file_is_dirty(sp, repo_root)]
 
 
-def _file_is_dirty(file: pathlib.Path) -> bool:
-    content = file.read_text(encoding=_ASSUMED_ENCODING).split("\n")
+def _file_is_dirty(
+    relpath: _fileutils.RelativePath, repo_root: pathlib.Path
+) -> bool:
+    if relpath.is_binary:
+        return False
+
+    content = relpath.read_text_relative_to(repo_root).split("\n")
     for line in content:
         for marker in _sanitize.SANITIZER_MARKERS:
             if marker in line:
@@ -149,15 +159,14 @@ def _file_is_dirty(file: pathlib.Path) -> bool:
 
 
 def _sanitize_files(
-    basedir: pathlib.Path, file_relpaths: List[pathlib.Path]
+    basedir: pathlib.Path, file_relpaths: List[_fileutils.RelativePath]
 ) -> None:
     """Sanitize the provided files."""
     for relpath in file_relpaths:
-        file = basedir / relpath
-        text = file.read_text(encoding=_ASSUMED_ENCODING)
+        text = relpath.read_text_relative_to(basedir)
         sanitized_text = _sanitize.sanitize(text)
-        file.write_text(sanitized_text)
-        LOGGER.info(f"Sanitized {file}")
+        relpath.write_text_relative_to(data=sanitized_text, basedir=basedir)
+        LOGGER.info(f"Sanitized {relpath}")
 
 
 def _sanitize_to_target_branch(

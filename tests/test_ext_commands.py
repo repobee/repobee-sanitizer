@@ -108,7 +108,7 @@ def test_sanitize_repo_discover_mode_target_branch_with_binary_files(
         f"--repo-root {fake_repo.path}".split()
     )
 
-    fake_repo.git.checkout(target_branch)
+    fake_repo.repo.git.checkout(target_branch)
     assert_expected_text_in_files(fake_repo.file_infos)
 
 
@@ -350,7 +350,7 @@ def fake_repo(tmpdir) -> _FakeRepoInfo:
 def assert_expected_text_in_files(file_infos):
     def assert_expected_text_in_file(file_info):
         if file_info.encoding == "binary":
-            assert file_info.read_bytes() == file_info.expected_text
+            assert file_info.abspath.read_bytes() == file_info.expected_text
         else:
             assert (
                 file_info.abspath.read_text(file_info.encoding)
