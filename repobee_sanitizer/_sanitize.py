@@ -2,8 +2,6 @@
 
 .. module:: _sanitize_file
     :synopsis: Module for file sanitization functionality.
-
-.. moduleauthor:: Simon Larsén
 """
 import re
 import repobee_plug as plug
@@ -38,8 +36,10 @@ def _check_syntax(lines: List[str]) -> None:
     last = END_BLOCK
     errors = []
     prefix = ""
+    has_blocks = False
     for line_number, line in enumerate(lines, start=1):
         if START_BLOCK in line:
+            has_blocks = True
             if last != END_BLOCK:
                 errors.append(
                     f"Line {line_number}: "
@@ -69,6 +69,9 @@ def _check_syntax(lines: List[str]) -> None:
 
     if last != END_BLOCK:
         errors.append("Final block must be an END block")
+
+    if not has_blocks:
+        errors.append("There are no markers in the file")
 
     if errors:
         raise plug.PlugError(errors)

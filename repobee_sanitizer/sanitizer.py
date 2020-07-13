@@ -3,8 +3,6 @@
 .. module:: sanitizer
     :synopsis: A plugin for RepoBee to sanitize master repositories before
         being pushed to students.
-
-.. moduleauthor:: Simon Larsén
 """
 
 from repobee_sanitizer._sanitize_repo import SanitizeRepo

@@ -32,7 +32,7 @@ class SanitizeRepo(plug.Plugin):
         self, args: argparse.Namespace, api: None,
     ) -> Optional[Mapping[str, List[plug.Result]]]:
         message = _check_repo_state(args.repo_root)
-        if message:
+        if message and not args.force:
             return plug.Result(
                 name="sanitize-repo", msg=message, status=plug.Status.ERROR,
             )
@@ -82,6 +82,11 @@ class SanitizeRepo(plug.Plugin):
             "--discover-files",
             help="Find and sanitize all files in the repository that contain "
             "at least one sanitizer marker.",
+            action="store_true",
+        )
+        parser.add_argument(
+            "--force",
+            help="Allow uncommitted and untracked files",
             action="store_true",
         )
 
@@ -173,6 +178,7 @@ def _sanitize_to_target_branch(
     with tempfile.TemporaryDirectory() as tmpdir:
         repo_copy_path = pathlib.Path(tmpdir) / "repo"
         shutil.copytree(src=repo_path, dst=repo_copy_path)
+        _clean_repo(repo_copy_path)
         _sanitize_files(repo_copy_path, file_relpaths)
         _git_commit_on_branch(repo_copy_path, target_branch)
         _git_fetch(
@@ -181,6 +187,15 @@ def _sanitize_to_target_branch(
             dst_repo_path=repo_path,
             dst_branch=target_branch,
         )
+
+
+def _clean_repo(repo_path: pathlib.Path):
+    """Resets working tree and index to HEAD. This is to untracked files as
+    well as uncommitted changes.
+    """
+    repo = git.Repo(str(repo_path))
+    repo.git.reset("--hard")
+    repo.git.clean("-dfx")
 
 
 def _check_repo_state(repo_root) -> Optional[str]:
