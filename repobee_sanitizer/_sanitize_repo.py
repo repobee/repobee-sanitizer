@@ -107,7 +107,7 @@ class SanitizeRepo(plug.Plugin):
         )
 
 
-def _parse_file_list(file_list) -> List[pathlib.Path]:
+def _parse_file_list(file_list: pathlib.Path) -> List[pathlib.Path]:
     if not file_list.is_file():
         raise plug.PlugError(f"No such file: {file_list}")
 
@@ -119,7 +119,7 @@ def _parse_file_list(file_list) -> List[pathlib.Path]:
     ]
 
 
-def _discover_dirty_files(repo_root) -> List[pathlib.Path]:
+def _discover_dirty_files(repo_root: pathlib.Path) -> List[pathlib.Path]:
     """
     Returns:
         A list of relative file paths for files that need to be sanitized.
