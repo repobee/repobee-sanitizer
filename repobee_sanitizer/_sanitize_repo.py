@@ -19,8 +19,6 @@ import git
 from repobee_sanitizer import _sanitize
 from repobee_sanitizer import _fileutils
 
-_ASSUMED_ENCODING = "utf8"
-
 LOGGER = daiquiri.getLogger(__file__)
 
 
@@ -121,7 +119,9 @@ def _parse_file_list(
 
     return [
         _fileutils.create_relpath(repo_root / p.strip(), repo_root)
-        for p in file_list.read_text(encoding=_ASSUMED_ENCODING)
+        for p in file_list.read_text(
+            encoding=_fileutils.guess_encoding(file_list)
+        )
         .strip()
         .split("\n")
     ]

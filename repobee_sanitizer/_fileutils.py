@@ -68,12 +68,18 @@ def create_relpath(
     abspath.relative_to(basedir)
 
     relpath = abspath.relative_to(basedir)
-    encoding = _infer_encoding(abspath)
+    encoding = guess_encoding(abspath)
     return RelativePath(relpath=relpath, encoding=encoding)
 
 
-def _infer_encoding(path: pathlib.Path) -> str:
-    """Use the ``file`` command to guess the encoding of a file."""
+def guess_encoding(path: pathlib.Path) -> str:
+    """Use the ``file`` command to guess the encoding of a file.
+
+    Args:
+        path: Path to a file.
+    Returns:
+        The guessed encoding of the file.
+    """
     proc = subprocess.run(
         ["file", "--mime-encoding", "--brief", str(path)], capture_output=True
     )
