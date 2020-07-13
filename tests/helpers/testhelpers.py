@@ -56,3 +56,7 @@ def read_valid_test_case_files(test_case_dir: pathlib.Path) -> Tuple[str, str]:
 
 def get_test_image_path() -> pathlib.Path:
     return RESOURCES_BASEDIR / "RepoBee_favicon.png"
+
+
+def get_resource(resource_name: str) -> pathlib.Path:
+    return RESOURCES_BASEDIR / resource_name
