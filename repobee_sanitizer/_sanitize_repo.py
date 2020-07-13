@@ -131,7 +131,7 @@ def _discover_dirty_files(repo_root: pathlib.Path) -> List[pathlib.Path]:
     """
     git_dir_relpath = ".git"
     return [
-        file
+        file.relative_to(repo_root)
         for file in list(repo_root.rglob("*"))
         if file.is_file()
         and (file.relative_to(repo_root).parts[0] != git_dir_relpath)
