@@ -171,7 +171,7 @@ def _sanitize_files(
 
 def _sanitize_to_target_branch(
     repo_path: pathlib.Path,
-    file_relpaths: List[pathlib.Path],
+    file_relpaths: List[_fileutils.RelativePath],
     target_branch: str,
 ) -> None:
     """Create a commit on the target branch of the specified repo with
