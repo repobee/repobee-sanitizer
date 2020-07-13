@@ -199,7 +199,7 @@ def _clean_repo(repo_path: pathlib.Path):
 
 
 def _check_repo_state(repo_root) -> Optional[str]:
-    repo = git.Repo.init(repo_root)
+    repo = git.Repo(repo_root)
     if repo.head.commit.diff():
         return "There are uncommitted staged files in the repo"
     if repo.untracked_files:
