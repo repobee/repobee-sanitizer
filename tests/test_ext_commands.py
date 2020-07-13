@@ -109,6 +109,7 @@ def test_sanitize_repo_discover_mode_target_branch_with_binary_files(
     )
 
     fake_repo.repo.git.checkout(target_branch)
+    fake_repo.repo.git.reset("--hard")
     assert_expected_text_in_files(fake_repo.file_infos)
 
 
