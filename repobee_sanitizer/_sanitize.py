@@ -11,6 +11,12 @@ START_BLOCK = "REPOBEE-SANITIZER-BLOCK"
 REPLACE_WITH = "REPOBEE-SANITIZER-REPLACE-WITH"
 END_BLOCK = "REPOBEE-SANITIZER-END"
 
+SANITIZER_MARKERS = (
+    START_BLOCK,
+    REPLACE_WITH,
+    END_BLOCK,
+)
+
 
 def sanitize(content: str) -> str:
     """Create a sanitized version of the input.

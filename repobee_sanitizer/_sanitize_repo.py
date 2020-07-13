@@ -31,21 +31,18 @@ class SanitizeRepo(plug.Plugin):
     def _sanitize_repo(
         self, args: argparse.Namespace, api: None,
     ) -> Optional[Mapping[str, List[plug.Result]]]:
-        if not args.file_list.is_file():
-            raise plug.PlugError(f"No such file: {args.file_list}")
-
         message = _check_repo_state(args.repo_root)
         if message and not args.force:
             return plug.Result(
                 name="sanitize-repo", msg=message, status=plug.Status.ERROR,
             )
 
-        file_relpaths = [
-            p.strip()
-            for p in args.file_list.read_text(encoding=_ASSUMED_ENCODING)
-            .strip()
-            .split("\n")
-        ]
+        assert args.file_list or args.discover_files, "Missing arguments"
+        file_relpaths = (
+            _parse_file_list(args.file_list)
+            if args.file_list
+            else _discover_dirty_files(args.repo_root)
+        )
 
         if args.no_commit:
             LOGGER.info("Executing dry run")
@@ -63,21 +60,29 @@ class SanitizeRepo(plug.Plugin):
         """
         parser = plug.ExtensionParser()
         parser.add_argument(
-            "-f",
-            "--file-list",
-            help="Path to a list of files to sanitize. The paths should be "
-            "relative to the root of the repository.",
-            type=pathlib.Path,
-            metavar="path",
-            required=True,
-        )
-        parser.add_argument(
             "-r",
             "--repo-root",
             help="Path to the worktree root of the repository to sanitize.",
             type=pathlib.Path,
             metavar="path",
             default=pathlib.Path("."),
+        )
+
+        files_mutex_grp = parser.add_mutually_exclusive_group(required=True)
+        files_mutex_grp.add_argument(
+            "-f",
+            "--file-list",
+            help="Path to a list of files to sanitize. The paths should be "
+            "relative to the root of the repository.",
+            type=pathlib.Path,
+            metavar="path",
+        )
+        files_mutex_grp.add_argument(
+            "-d",
+            "--discover-files",
+            help="Find and sanitize all files in the repository that contain "
+            "at least one sanitizer marker.",
+            action="store_true",
         )
         parser.add_argument(
             "--force",
@@ -105,6 +110,42 @@ class SanitizeRepo(plug.Plugin):
             description="Sanitize the current repository.",
             callback=self._sanitize_repo,
         )
+
+
+def _parse_file_list(file_list: pathlib.Path) -> List[pathlib.Path]:
+    if not file_list.is_file():
+        raise plug.PlugError(f"No such file: {file_list}")
+
+    return [
+        p.strip()
+        for p in file_list.read_text(encoding=_ASSUMED_ENCODING)
+        .strip()
+        .split("\n")
+    ]
+
+
+def _discover_dirty_files(repo_root: pathlib.Path) -> List[pathlib.Path]:
+    """
+    Returns:
+        A list of relative file paths for files that need to be sanitized.
+    """
+    git_dir_relpath = ".git"
+    return [
+        file
+        for file in list(repo_root.rglob("*"))
+        if file.is_file()
+        and (file.relative_to(repo_root).parts[0] != git_dir_relpath)
+        and _file_is_dirty(file)
+    ]
+
+
+def _file_is_dirty(file: pathlib.Path) -> bool:
+    content = file.read_text(encoding=_ASSUMED_ENCODING).split("\n")
+    for line in content:
+        for marker in _sanitize.SANITIZER_MARKERS:
+            if marker in line:
+                return True
+    return False
 
 
 def _sanitize_files(
