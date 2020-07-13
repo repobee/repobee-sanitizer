@@ -53,6 +53,12 @@ class SanitizeRepo(plug.Plugin):
                 args.repo_root, file_relpaths, args.target_branch
             )
 
+        return plug.Result(
+            name="sanitize-repo",
+            msg="Successfully sanitized repo",
+            status=plug.Status.SUCCESS,
+        )
+
     def create_extension_command(self) -> plug.ExtensionCommand:
         """
         Returns:
