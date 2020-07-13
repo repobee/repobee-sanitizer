@@ -1,6 +1,7 @@
 import collections
 import pathlib
 import sys
+import shutil
 
 import pytest
 import git
@@ -257,6 +258,21 @@ def test_sanitize_repo_raises_plug_error_if_file_list_doesnt_exist(
             f"--file-list {non_existing_file_list} "
             f"--repo-root {fake_repo.path} "
             "--no-commit"
+        )
+
+
+def test_sanitize_repo_raises_invalid_repo_if_invalid_repo(
+    sanitizer_config, fake_repo
+):
+    target_branch = "student-version"
+    git_path = fake_repo.path / ".git"
+    shutil.rmtree(git_path, ignore_errors=True)
+
+    with pytest.raises(git.InvalidGitRepositoryError):
+        execute_sanitize_repo(
+            f"--file-list {fake_repo.file_list_path} "
+            f"--repo-root {fake_repo.path} "
+            f"--target-branch {target_branch} "
         )
 
 
