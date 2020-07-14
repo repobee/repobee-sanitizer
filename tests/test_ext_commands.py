@@ -268,12 +268,14 @@ def test_sanitize_repo_raises_invalid_repo_if_invalid_repo(
     git_path = fake_repo.path / ".git"
     shutil.rmtree(git_path, ignore_errors=True)
 
-    with pytest.raises(git.InvalidGitRepositoryError):
+    with pytest.raises(plug.PlugError) as exc_info:
         execute_sanitize_repo(
             f"--file-list {fake_repo.file_list_path} "
             f"--repo-root {fake_repo.path} "
             f"--target-branch {target_branch} "
         )
+
+    assert f"Not a git repository: '{fake_repo.path}'" in str(exc_info.value)
 
 
 def execute_sanitize_repo(arguments: str):
