@@ -212,6 +212,24 @@ def test_sanitize_repo_return_fail_when_has_untracked_files(
     assert "untracked file" in expected_error.msg
 
 
+def test_sanitize_repo_returns_success_status(sanitizer_config, fake_repo):
+    """If nothing goes wrong, this test should find that sanitize_repo
+    returns a plug.Status with a SUCCESS
+    """
+    target_branch = "student-version"
+
+    result = execute_sanitize_repo(
+        f"--file-list {fake_repo.file_list_path} "
+        f"--repo-root {fake_repo.path} "
+        f"--target-branch {target_branch} "
+    )
+
+    expected_success = result["sanitizer"][0]
+
+    assert expected_success.status == plug.Status.SUCCESS
+    assert expected_success.msg == "Successfully sanitized repo"
+
+
 def test_sanitize_repo_passes_with_force_flag(sanitizer_config, fake_repo):
     """Test adds an utracked, unstaged, and staged file to make sure
     that repobee does not complain when we add --force to the command.
