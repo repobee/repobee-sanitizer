@@ -64,8 +64,7 @@ def create_relpath(
         raise ValueError(
             f"Argument 'abspath' must be absolute, but was: '{abspath}'"
         )
-    abspath.resolve(strict=True)
-    abspath.relative_to(basedir)
+    abspath.resolve(strict=True)  # raises if the file doesn't exist
 
     relpath = abspath.relative_to(basedir)
     encoding = guess_encoding(abspath)
