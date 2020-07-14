@@ -3,7 +3,7 @@
 .. module:: _sanitize_file
     :synopsis: Module for file sanitization functionality.
 """
-from repobee_sanitizer import _syntaxhelpers as syntax
+from repobee_sanitizer import syntax as syntax
 
 import re
 from typing import List, Iterable
