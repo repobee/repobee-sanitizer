@@ -9,7 +9,7 @@
 
 A plugin for RepoBee to sanitize template repositories before being pushed to students.
 `repobee-sanitizer` adds the commands `sanitize-file` and `sanitize-repo` that lets the user sanitize files and repos (directories currently) respectively.
-`repobee-sanitizer` can remove or replace text by going through files, looking for certain `REPOBEE-SANITIZER-<type>` text-markers. The most simple usage consists of a `REPOBEE-SANITIZER-BLOCK` and a `REPOBEE-SANITIZER-END` marker, where content between these two markers will be removes, or "santitized".
+`repobee-sanitizer` can remove or replace text by going through files, looking for certain `REPOBEE-SANITIZER-<type>` text-markers. The most simple usage consists of a `REPOBEE-SANITIZER-START` and a `REPOBEE-SANITIZER-END` marker, where content between these two markers will be removes, or "santitized".
 
 # Example use cases
 
@@ -19,7 +19,7 @@ Consider the following code:
 class StackTest {
     @Test
     public void topIsLastPushedValue() {
-REPOBEE-SANITIZER-BLOCK
+REPOBEE-SANITIZER-START
         // Arrange
         int value = 1338;
 
@@ -56,7 +56,7 @@ class StackTest {
 class StackTest {
     @Test
     public void topIsLastPushedValue() {
-REPOBEE-SANITIZER-BLOCK
+REPOBEE-SANITIZER-START
         // Arrange
         int value = 1338;
 
@@ -102,7 +102,7 @@ Sometimes (usually) we want code that can run, its a good thing then that `repob
 class StackTest {
     @Test
     public void topIsLastPushedValue() {
-//REPOBEE-SANITIZER-BLOCK
+//REPOBEE-SANITIZER-START
         // Arrange
         int value = 1338;
 
@@ -131,7 +131,7 @@ class StackTest {
 
 `repobee-sanitizer`:
 
-* Determines prefix as any text that comes before `REPOBEE-SANITIZER-BLOCK`
+* Determines prefix as any text that comes before `REPOBEE-SANITIZER-START`
 * Only determines prefix on a block-to-block basis, meaning that the prefix selected at a `BLOCK` marker must be used untill and including the next `END` marker
   * This means that all `repobee-sanitizer` blocks can have individuall prefixes
 * Code between replace and end markers **MUST** also be prefixed
@@ -140,7 +140,7 @@ class StackTest {
 
 for `repobee-sanitizer` to work, marker syntax must be correct, this includes spelling of the markers themselves, the markers currently are as follows:
 
-- REPOBEE-SANITIZER-BLOCK
+- REPOBEE-SANITIZER-START
     - REQUIRED: A block is not a block without a start marker
     - Indicates the start of a block. Any text will be removed untill reaching a `REPLACE-WITH` or `END` marker.
 - REPOBEE-SANITIZER-REPLACE-WITH
