@@ -1,6 +1,10 @@
+import pathlib
+from typing import List
+
 import re
 import repobee_plug as plug
-from typing import List
+
+from repobee_sanitizer import _fileutils
 
 START_BLOCK = "REPOBEE-SANITIZER-BLOCK"
 REPLACE_WITH = "REPOBEE-SANITIZER-REPLACE-WITH"
@@ -56,3 +60,17 @@ def check_syntax(lines: List[str]) -> None:
 
     if errors:
         raise plug.PlugError(errors)
+
+
+def file_is_dirty(
+    relpath: _fileutils.RelativePath, repo_root: pathlib.Path
+) -> bool:
+    if relpath.is_binary:
+        return False
+
+    content = relpath.read_text_relative_to(repo_root).split("\n")
+    for line in content:
+        for marker in SANITIZER_MARKERS:
+            if marker in line:
+                return True
+    return False
