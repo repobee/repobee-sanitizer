@@ -199,7 +199,11 @@ def _clean_repo(repo_path: pathlib.Path):
 
 
 def _check_repo_state(repo_root) -> Optional[str]:
-    repo = git.Repo(repo_root)
+    try:
+        repo = git.Repo(repo_root)
+    except git.InvalidGitRepositoryError as exc:
+        raise plug.PlugError(f"Not a git repository: '{repo_root}'") from exc
+
     if repo.head.commit.diff():
         return "There are uncommitted staged files in the repo"
     if repo.untracked_files:
