@@ -18,6 +18,7 @@ import git
 
 from repobee_sanitizer import _sanitize
 from repobee_sanitizer import _fileutils
+from repobee_sanitizer import _syntaxhelpers
 
 LOGGER = daiquiri.getLogger(__file__)
 
@@ -152,7 +153,7 @@ def _file_is_dirty(
 
     content = relpath.read_text_relative_to(repo_root).split("\n")
     for line in content:
-        for marker in _sanitize.SANITIZER_MARKERS:
+        for marker in _syntaxhelpers.SANITIZER_MARKERS:
             if marker in line:
                 return True
     return False
