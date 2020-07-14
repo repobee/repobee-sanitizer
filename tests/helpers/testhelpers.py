@@ -11,6 +11,7 @@ TEST_CASE_DIR = pathlib.Path(__file__).parent.parent / "test_case_files"
 
 VALID_CASES_BASEDIR = TEST_CASE_DIR / "valid"
 INVALID_CASES_BASEDIR = TEST_CASE_DIR / "invalid"
+RESOURCES_BASEDIR = pathlib.Path(__file__).parent.parent / "resources"
 
 
 def discover_test_cases(
@@ -51,3 +52,11 @@ def read_valid_test_case_files(test_case_dir: pathlib.Path) -> Tuple[str, str]:
     inp = (test_case_dir / INPUT_FILENAME).read_text(encoding="utf8")
     out = (test_case_dir / OUTPUT_FILENAME).read_text(encoding="utf8")
     return inp, out
+
+
+def get_test_image_path() -> pathlib.Path:
+    return RESOURCES_BASEDIR / "RepoBee_favicon.png"
+
+
+def get_resource(resource_name: str) -> pathlib.Path:
+    return RESOURCES_BASEDIR / resource_name
