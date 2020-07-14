@@ -1,3 +1,9 @@
+"""Functions and constants relating to the syntax of repobee-sanitizer.
+
+.. module:: _syntaxhelpers
+    :synopsis: Functions and constants relating to the syntax of
+    repobee-sanitizer.
+"""
 import pathlib
 from typing import List
 
@@ -18,6 +24,13 @@ SANITIZER_MARKERS = (
 
 
 def check_syntax(lines: List[str]) -> None:
+    """Checks if the input adheres to proper sanitizer syntax.
+
+    Args:
+        List containing every line of a text file as one element in the list.
+    Raises:
+        plug.PlugError: Invalid Syntax
+    """
     last = END_BLOCK
     errors = []
     prefix = ""
@@ -65,6 +78,15 @@ def check_syntax(lines: List[str]) -> None:
 def file_is_dirty(
     relpath: _fileutils.RelativePath, repo_root: pathlib.Path
 ) -> bool:
+    """Checks if a file contains any markers, therefore telling us if it needs
+    to be sanitized or not.
+
+    Args:
+        repo_root: The root directory of the repository containing the file.
+        relpath: The file's relative path to repo_root
+    Returns:
+        A boolean value. True if the file is dirty, false if not.
+    """
     if relpath.is_binary:
         return False
 
