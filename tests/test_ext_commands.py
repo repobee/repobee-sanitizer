@@ -169,8 +169,10 @@ def test_sanitize_repo_returns_fail_when_repo_has_staged_changes(
         "--no-commit"
     )
 
-    assert result.status == plug.Status.ERROR
-    assert "uncommitted staged file" in result.msg
+    expected_error = result["sanitizer"][0]
+
+    assert expected_error.status == plug.Status.ERROR
+    assert "uncommitted staged file" in expected_error.msg
 
 
 def test_sanitize_repo_return_fail_when_has_unstaged_changes(
@@ -185,8 +187,10 @@ def test_sanitize_repo_return_fail_when_has_unstaged_changes(
         "--no-commit"
     )
 
-    assert result.status == plug.Status.ERROR
-    assert "uncommitted unstaged file" in result.msg
+    expected_error = result["sanitizer"][0]
+
+    assert expected_error.status == plug.Status.ERROR
+    assert "uncommitted unstaged file" in expected_error.msg
 
 
 def test_sanitize_repo_return_fail_when_has_untracked_files(
@@ -202,8 +206,10 @@ def test_sanitize_repo_return_fail_when_has_untracked_files(
         "--no-commit"
     )
 
-    assert result.status == plug.Status.ERROR
-    assert "untracked file" in result.msg
+    expected_error = result["sanitizer"][0]
+
+    assert expected_error.status == plug.Status.ERROR
+    assert "untracked file" in expected_error.msg
 
 
 def test_sanitize_repo_passes_with_force_flag(sanitizer_config, fake_repo):
