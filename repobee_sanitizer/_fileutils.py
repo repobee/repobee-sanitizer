@@ -83,7 +83,5 @@ def guess_encoding(path: pathlib.Path) -> str:
         ["file", "--mime-encoding", "--brief", str(path)],
         stdout=subprocess.PIPE,
     )
-    result = proc.stdout.decode(encoding=sys.getdefaultencoding()).strip()
-    if result.lower() in ["iso8859", "iso-8859"]:
-        result += "-1"
-    return result
+
+    return proc.stdout.decode(encoding=sys.getdefaultencoding()).strip()
