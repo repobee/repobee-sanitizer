@@ -2,7 +2,7 @@
 
 .. module:: _syntaxhelpers
     :synopsis: Functions and constants relating to the syntax of
-    repobee-sanitizer.
+        repobee-sanitizer.
 """
 import pathlib
 from typing import List
@@ -41,7 +41,7 @@ def check_syntax(lines: List[str]) -> None:
 
     Args:
         lines: List containing every line of a text file as one element in the
-        list.
+            list.
     Raises:
         plug.PlugError: Invalid Syntax.
     """
