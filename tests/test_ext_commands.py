@@ -1,6 +1,7 @@
 import collections
 import pathlib
 import sys
+import shutil
 
 import pytest
 import git
@@ -12,7 +13,7 @@ import testhelpers
 
 
 _FileInfo = collections.namedtuple(
-    "_FileInfo", "original_text expected_text abspath relpath".split()
+    "_FileInfo", "original_text expected_text abspath relpath encoding".split()
 )
 _FakeRepoInfo = collections.namedtuple(
     "_FakeRepoInfo", "repo path file_list_path file_infos default_branch"
@@ -60,6 +61,45 @@ def test_sanitize_repo_discover_mode_target_branch(
     """Test sanitize repo without a list of file. Sanitizer should instead
     discover all the files that it should sanitize.
     """
+    target_branch = "student-version"
+    repobee.main(
+        f"repobee --config-file {sanitizer_config} sanitize-repo "
+        f"--target-branch {target_branch} "
+        f"--discover-files "
+        f"--repo-root {fake_repo.path}".split()
+    )
+
+    fake_repo.repo.git.checkout(target_branch)
+    fake_repo.repo.git.reset("--hard")
+    assert_expected_text_in_files(fake_repo.file_infos)
+
+
+def test_sanitize_repo_discover_mode_target_branch_with_binary_files(
+    sanitizer_config, fake_repo
+):
+    """Test sanitize-repo in discover mode, when there are binary files in the
+    repo. This is to ensure that the command does not try to decode binary
+    files as text.
+    """
+    # add a binary file in the repo
+    image_src_path = testhelpers.get_test_image_path()
+    image_dst_path = fake_repo.path / image_src_path.name
+    shutil.copy(image_src_path, image_dst_path)
+
+    fake_repo.repo.git.add(image_dst_path)
+    fake_repo.repo.git.commit("-m", "Add image")
+
+    fake_repo.file_infos.append(
+        _FileInfo(
+            original_text=image_dst_path.read_bytes(),
+            expected_text=image_dst_path.read_bytes(),
+            abspath=image_dst_path,
+            relpath=image_dst_path.relative_to(fake_repo.path),
+            encoding="binary",
+        )
+    )
+
+    # execute test
     target_branch = "student-version"
     repobee.main(
         f"repobee --config-file {sanitizer_config} sanitize-repo "
@@ -313,6 +353,23 @@ def test_sanitize_repo_raises_plug_error_if_file_list_doesnt_exist(
         )
 
 
+def test_sanitize_repo_raises_invalid_repo_if_invalid_repo(
+    sanitizer_config, fake_repo
+):
+    target_branch = "student-version"
+    git_path = fake_repo.path / ".git"
+    shutil.rmtree(git_path, ignore_errors=True)
+
+    with pytest.raises(plug.PlugError) as exc_info:
+        execute_sanitize_repo(
+            f"--file-list {fake_repo.file_list_path} "
+            f"--repo-root {fake_repo.path} "
+            f"--target-branch {target_branch} "
+        )
+
+    assert f"Not a git repository: '{fake_repo.path}'" in str(exc_info.value)
+
+
 def execute_sanitize_repo(arguments: str):
     """Run the sanitize-repo function with the given arguments"""
     sanitize_repo = sanitizer.SanitizeRepo()
@@ -338,6 +395,7 @@ def fake_repo(tmpdir) -> _FakeRepoInfo:
                 expected_text=expected_output_text,
                 abspath=fake_repo_path / id_,
                 relpath=pathlib.Path(id_),
+                encoding="utf8",
             )
         )
 
@@ -361,8 +419,17 @@ def fake_repo(tmpdir) -> _FakeRepoInfo:
 
 
 def assert_expected_text_in_files(file_infos):
+    def assert_expected_text_in_file(file_info):
+        if file_info.encoding == "binary":
+            assert file_info.abspath.read_bytes() == file_info.expected_text
+        else:
+            assert (
+                file_info.abspath.read_text(file_info.encoding)
+                == file_info.expected_text
+            )
+
     asserted = False
     for file_info in file_infos:
         asserted = True
-        assert file_info.abspath.read_text("utf8") == file_info.expected_text
+        assert_expected_text_in_file(file_info)
     assert asserted, "Loop not run, test error"
