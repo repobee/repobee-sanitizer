@@ -25,18 +25,34 @@ class Markers(enum.Enum):
 def check_syntax(lines: List[str]) -> None:
     """Checks if the input adheres to proper sanitizer syntax using proper
     markers:
-    REPOBE-SANITIZER-START:
-        REQUIRED: Must be the first marker in a file. For every START
-        marker there must be a END markers.
-    REPOBEE-SANITIZER-REPLACE-WITH:
-        OPTIONAL: Must be between a START and END marker.
-    REPOBEE_SANITIZER-END:
-        REQUIRED: Must (only) exist for every START marker.
-    Prefixes: A marker kan be prefixed with any character(s)
-        (Ex: // for java comments). Prefix is determined before the START
-        block and MUST be used before the other markers in the same block,
-        as well as the lines between the REPLACE and END markers if that
-        block has a REPLACE marker.
+
+    The grammar is defined below in EBNF-like manner. Note that the syntax is
+    not context- free as prefixes are defined on a per-block basis, so it's not
+    possible to perfectly describe the syntax with EBNF.
+
+    .. code-block:: raw
+            FILE ::=
+                MARKERLESS_LINE* ((BLOCK | PREFIXED_BLOCK) MARKERLESS_LINE*)+
+            BLOCK ::=
+                START_MARKER
+                MARKERLESS_LINE*
+                (REPLACE_MARKER
+                MARKERLESS_LINE*)?
+                END_MARKER
+            PREFIXED_BLOCK ::=
+                PREFIX START_MARKER
+                MARKERLESS_LINE*
+                (PREFIX REPLACE_MARKER
+                (PREFIX MARKERLESS_LINE)*)?
+                PREFIX END_MARKER
+            START_MARKER ::= "REPOBEE-SANITIZER-START\n"
+            REPLACE_MARKER ::= "REPOBEE-SANITIZER-REPLACE-WITH\n"
+            END_MARKER ::= "REPOBEE-SANITIZER-END\n"
+            MARKERLESS_LINE ::= line without sanitizer markers
+            PREFIX ::= a sequence of characters that is defined for each block
+                as any sequence that appears before the START_MARKER of that
+                particular PREFIXED_BLOCK.
+
 
     Args:
         lines: List containing every line of a text file as one element in the
