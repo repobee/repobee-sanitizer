@@ -31,27 +31,28 @@ def check_syntax(lines: List[str]) -> None:
     possible to perfectly describe the syntax with EBNF.
 
     .. code-block:: raw
-            FILE ::=
-                MARKERLESS_LINE* ((BLOCK | PREFIXED_BLOCK) MARKERLESS_LINE*)+
-            BLOCK ::=
-                START_MARKER
-                MARKERLESS_LINE*
-                (REPLACE_MARKER
-                MARKERLESS_LINE*)?
-                END_MARKER
-            PREFIXED_BLOCK ::=
-                PREFIX START_MARKER
-                MARKERLESS_LINE*
-                (PREFIX REPLACE_MARKER
-                (PREFIX MARKERLESS_LINE)*)?
-                PREFIX END_MARKER
-            START_MARKER ::= "REPOBEE-SANITIZER-START\n"
-            REPLACE_MARKER ::= "REPOBEE-SANITIZER-REPLACE-WITH\n"
-            END_MARKER ::= "REPOBEE-SANITIZER-END\n"
-            MARKERLESS_LINE ::= line without sanitizer markers
-            PREFIX ::= a sequence of characters that is defined for each block
-                as any sequence that appears before the START_MARKER of that
-                particular PREFIXED_BLOCK.
+
+        FILE ::=
+            MARKERLESS_LINE* ((BLOCK | PREFIXED_BLOCK) MARKERLESS_LINE*)+
+        BLOCK ::=
+            START_MARKER
+            MARKERLESS_LINE*
+            (REPLACE_MARKER
+            MARKERLESS_LINE*)?
+            END_MARKER
+        PREFIXED_BLOCK ::=
+            PREFIX START_MARKER
+            MARKERLESS_LINE*
+            (PREFIX REPLACE_MARKER
+            (PREFIX MARKERLESS_LINE)*)?
+            PREFIX END_MARKER
+        START_MARKER ::= "REPOBEE-SANITIZER-START\n"
+        REPLACE_MARKER ::= "REPOBEE-SANITIZER-REPLACE-WITH\n"
+        END_MARKER ::= "REPOBEE-SANITIZER-END\n"
+        MARKERLESS_LINE ::= line without sanitizer markers
+        PREFIX ::= a sequence of characters that is defined for each block
+            as any sequence that appears before the START_MARKER of that
+            particular PREFIXED_BLOCK.
 
 
     Args:
