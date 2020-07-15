@@ -84,6 +84,6 @@ def guess_encoding(path: pathlib.Path) -> str:
         stdout=subprocess.PIPE,
     )
     result = proc.stdout.decode(encoding=sys.getdefaultencoding()).strip()
-    if result == "ISO8859":
+    if result.lower() in ["iso8859", "iso-8859"]:
         result += "-1"
     return result
