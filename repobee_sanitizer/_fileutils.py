@@ -83,4 +83,5 @@ def guess_encoding(path: pathlib.Path) -> str:
         ["file", "--mime-encoding", "--brief", str(path)],
         stdout=subprocess.PIPE,
     )
+
     return proc.stdout.decode(encoding=sys.getdefaultencoding()).strip()

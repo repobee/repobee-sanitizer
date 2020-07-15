@@ -52,11 +52,6 @@ class TestCreateRelativePath:
 class TestRelativePath:
     """Tests for the RelativePath class."""
 
-    @pytest.mark.xfail(
-        reason="The file command doesn't give the entire ISO8859 encoding "
-        "(e.g. ISO8859-1), so reading crashes",
-        strict=True,
-    )
     def test_read_iso8859_1_encoded_file(self):
         """Currently, guessing ISO8859 encodings with the file command often
         only gives ``ISO8859``, which is not a complete encoding (i.e. it
@@ -70,4 +65,4 @@ class TestRelativePath:
 
         relpath = _fileutils.create_relpath(abspath=abspath, basedir=basedir)
 
-        assert relpath.read_text_relative_to(basedir) == expected_text
+        assert relpath.read_text_relative_to(basedir).strip() == expected_text
