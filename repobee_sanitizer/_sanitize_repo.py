@@ -19,6 +19,8 @@ import git
 from repobee_sanitizer import _sanitize
 from repobee_sanitizer import _fileutils
 
+PLUGIN_NAME = "sanitizer"
+
 LOGGER = daiquiri.getLogger(__file__)
 
 
@@ -32,9 +34,15 @@ class SanitizeRepo(plug.Plugin):
     ) -> Optional[Mapping[str, List[plug.Result]]]:
         message = _check_repo_state(args.repo_root)
         if message and not args.force:
-            return plug.Result(
-                name="sanitize-repo", msg=message, status=plug.Status.ERROR,
-            )
+            return {
+                PLUGIN_NAME: [
+                    plug.Result(
+                        name="sanitize-repo",
+                        msg=message,
+                        status=plug.Status.ERROR,
+                    )
+                ]
+            }
 
         assert args.file_list or args.discover_files, "Missing arguments"
         file_relpaths = (
@@ -51,6 +59,16 @@ class SanitizeRepo(plug.Plugin):
             _sanitize_to_target_branch(
                 args.repo_root, file_relpaths, args.target_branch
             )
+
+        return {
+            PLUGIN_NAME: [
+                plug.Result(
+                    name="sanitize-repo",
+                    msg="Successfully sanitized repo",
+                    status=plug.Status.SUCCESS,
+                )
+            ]
+        }
 
     def create_extension_command(self) -> plug.ExtensionCommand:
         """
