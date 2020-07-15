@@ -18,7 +18,7 @@ import git
 
 from repobee_sanitizer import _sanitize
 from repobee_sanitizer import _fileutils
-from repobee_sanitizer import _syntaxhelpers
+from repobee_sanitizer import _syntax
 
 PLUGIN_NAME = "sanitizer"
 
@@ -160,9 +160,7 @@ def _discover_dirty_files(
         if path.is_file()
         and path.relative_to(repo_root).parts[0] != git_dir_relpath
     )
-    return [
-        sp for sp in relpaths if _syntaxhelpers.file_is_dirty(sp, repo_root)
-    ]
+    return [sp for sp in relpaths if _syntax.file_is_dirty(sp, repo_root)]
 
 
 def _sanitize_files(
