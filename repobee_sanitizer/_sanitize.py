@@ -27,12 +27,17 @@ def _sanitize(lines: List[str]) -> Iterable[str]:
     keep = True
     prefix_length = 0
     for line in lines:
-        if _syntax.START_BLOCK in line:
-            prefix = re.match(rf"(.*?){_syntax.START_BLOCK}", line).group(1)
+        if _syntax.Markers.START.value in line:
+            prefix = re.match(
+                rf"(.*?){_syntax.Markers.START.value}", line
+            ).group(1)
             prefix_length = len(prefix)
             keep = False
-        elif _syntax.REPLACE_WITH in line or _syntax.END_BLOCK in line:
-            if _syntax.END_BLOCK in line:
+        elif (
+            _syntax.Markers.REPLACE.value in line
+            or _syntax.Markers.END.value in line
+        ):
+            if _syntax.Markers.END.value in line:
                 prefix_length = 0
             keep = True
             continue

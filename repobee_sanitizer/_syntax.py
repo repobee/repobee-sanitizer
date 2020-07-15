@@ -4,6 +4,7 @@
     :synopsis: Functions and constants relating to the syntax of
         repobee-sanitizer.
 """
+import enum
 import pathlib
 from typing import List
 
@@ -12,15 +13,13 @@ import repobee_plug as plug
 
 from repobee_sanitizer import _fileutils
 
-START_BLOCK = "REPOBEE-SANITIZER-START"
-REPLACE_WITH = "REPOBEE-SANITIZER-REPLACE-WITH"
-END_BLOCK = "REPOBEE-SANITIZER-END"
 
-SANITIZER_MARKERS = (
-    START_BLOCK,
-    REPLACE_WITH,
-    END_BLOCK,
-)
+class Markers(enum.Enum):
+    """The markers that define sanitizer blocks."""
+
+    START = "REPOBEE-SANITIZER-START"
+    REPLACE = "REPOBEE-SANITIZER-REPLACE-WITH"
+    END = "REPOBEE-SANITIZER-END"
 
 
 def check_syntax(lines: List[str]) -> None:
@@ -45,41 +44,41 @@ def check_syntax(lines: List[str]) -> None:
     Raises:
         plug.PlugError: Invalid Syntax.
     """
-    last = END_BLOCK
+    last = Markers.END.value
     errors = []
     prefix = ""
     has_blocks = False
     for line_number, line in enumerate(lines, start=1):
-        if START_BLOCK in line:
+        if Markers.START.value in line:
             has_blocks = True
-            if last != END_BLOCK:
+            if last != Markers.END.value:
                 errors.append(
                     f"Line {line_number}: "
                     "START block must begin file or follow an END block"
                 )
-            prefix = re.match(rf"(.*?){START_BLOCK}", line).group(1)
-            last = START_BLOCK
-        elif REPLACE_WITH in line:
-            if last != START_BLOCK:
+            prefix = re.match(rf"(.*?){Markers.START.value}", line).group(1)
+            last = Markers.START.value
+        elif Markers.REPLACE.value in line:
+            if last != Markers.START.value:
                 errors.append(
                     f"Line {line_number}: "
                     "REPLACE-WITH block must follow START block"
                 )
-            last = REPLACE_WITH
-        elif END_BLOCK in line:
-            if last not in [START_BLOCK, REPLACE_WITH]:
+            last = Markers.REPLACE.value
+        elif Markers.END.value in line:
+            if last not in [Markers.START.value, Markers.REPLACE.value]:
                 errors.append(
                     f"Line {line_number}: "
                     "END block must follow START or REPLACE block"
                 )
-            last = END_BLOCK
+            last = Markers.END.value
 
-        if (last == REPLACE_WITH or END_BLOCK in line) and not line.startswith(
-            prefix
-        ):
+        if (
+            last == Markers.REPLACE.value or Markers.END.value in line
+        ) and not line.startswith(prefix):
             errors.append(f"Line {line_number}: Missing prefix")
 
-    if last != END_BLOCK:
+    if last != Markers.END.value:
         errors.append("Final block must be an END block")
 
     if not has_blocks:
@@ -106,7 +105,7 @@ def file_is_dirty(
 
     content = relpath.read_text_relative_to(repo_root).split("\n")
     for line in content:
-        for marker in SANITIZER_MARKERS:
-            if marker in line:
+        for marker in Markers:
+            if marker.value in line:
                 return True
     return False
