@@ -1,7 +1,7 @@
 class StackTest {
     @Test
     public void topIsLastPushedValue() {
-///REPOBEE-SANITIZER-START
+//REPOBEE-SANITIZER-START
         // Arrange
         int value = 1338;
 
