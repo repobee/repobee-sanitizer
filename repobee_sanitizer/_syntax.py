@@ -134,7 +134,7 @@ def file_is_dirty(
 
 def valid_shred_syntax(lines: List[str], errors: [str]) -> None:
     """Tells us whether or not the text has valid usage of the shred marker.
-    Valid syntax is, if the shred marker is on the first line of text, then on
+    Valid syntax is, if a shred marker is on the first line of text then on
     every line other than the first, there should be no markers. If there is
     is no shred marker on the first line, then there should not be one later.
 
