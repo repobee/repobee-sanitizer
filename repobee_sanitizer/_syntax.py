@@ -6,7 +6,7 @@
 """
 import enum
 import pathlib
-from typing import List
+from typing import List, Optional
 
 import re
 import repobee_plug as plug
@@ -63,11 +63,12 @@ def check_syntax(lines: List[str]) -> None:
         plug.PlugError: Invalid Syntax.
     """
     last = Markers.END.value
-    errors = []
     prefix = ""
     has_blocks = False
 
-    valid_shred_syntax(lines, errors)
+    errors = _check_shred_syntax(lines)
+    if errors:
+        raise plug.PlugError(errors)
 
     for line_number, line in enumerate(lines, start=1):
         if Markers.START.value in line:
@@ -132,7 +133,7 @@ def file_is_dirty(
     return False
 
 
-def valid_shred_syntax(lines: List[str], errors: [str]) -> None:
+def _check_shred_syntax(lines: List[str]) -> List[str]:
     """Tells us whether or not the text has valid usage of the shred marker.
     Valid syntax is, if a shred marker is on the first line of text then on
     every line other than the first, there should be no markers. If there is
@@ -142,18 +143,25 @@ def valid_shred_syntax(lines: List[str], errors: [str]) -> None:
         lines: The file to check syntax for as a list of one string per line.
         errors: The list to send any found errors.
     """
-    if Markers.SHRED.value in lines[0]:
-        for line_number, line in enumerate(lines[1:], start=2):
-            for marker in Markers:
-                if marker.value in line:
-                    errors.append(
-                        f"Line: {line_number}: Found marker "
-                        "after SHRED marker."
-                    )
-    else:
-        for line_number, line in enumerate(lines[1:], start=2):
-            if Markers.SHRED.value in line:
-                errors.append(
-                    f"Line: {line_number}: Found SHRED marker on line "
-                    "other than the first."
-                )
+    errors = []
+    has_shred_marker = Markers.SHRED.value in lines[0] if lines else False
+    for line_number, line in enumerate(lines, start=1):
+        marker = _contained_marker(line)
+        if marker == Markers.SHRED and line_number != 1:
+            errors.append(
+                f"Line {line_number}: SHRED marker only allowed on line 1"
+            )
+        elif marker != Markers.SHRED and has_shred_marker:
+            errors.append(
+                f"Line {line_number}: Marker is dissallowed after shred "
+                "marker"
+            )
+
+    return errors
+
+
+def _contained_marker(line: str) -> Optional[Markers]:
+    for marker in Markers:
+        if marker.value in line:
+            return marker
+    return None
