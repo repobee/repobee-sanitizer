@@ -121,8 +121,8 @@ def valid_shred_syntax(lines: List[str]) -> [str]:
         for marker in Markers:
             if marker.value in line:
                 errors.append(
-                    f"Line: {line_number}: SHRED marker must be the first "
-                    "line in a file"
+                    f"Line: {line_number}: SHRED marker must be on the "
+                    "first line in a file"
                 )
     return errors
 
