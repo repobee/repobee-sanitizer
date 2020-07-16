@@ -106,6 +106,27 @@ def check_syntax(lines: List[str]) -> None:
         raise plug.PlugError(errors)
 
 
+def valid_shred_syntax(lines: List[str]) -> [str]:
+    """Tells us whether or not the text has valid usage of the shred marker.
+    Valid syntax is if on every line other than the first, there are no SHRED
+    markers.
+
+    Args:
+        lines: The file to check syntax for as a list of one string per line.
+    Returns:
+        A List of strings describing all errors found.
+    """
+    errors = []
+    for line_number, line in enumerate(lines[1:], start=2):
+        for marker in Markers:
+            if marker.value in line:
+                errors.append(
+                    f"Line: {line_number}: SHRED marker must be the first "
+                    "line in a file"
+                )
+    return errors
+
+
 def file_is_dirty(
     relpath: _fileutils.RelativePath, repo_root: pathlib.Path
 ) -> bool:
