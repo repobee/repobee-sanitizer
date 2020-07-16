@@ -67,7 +67,7 @@ def check_syntax(lines: List[str]) -> None:
     prefix = ""
     has_blocks = False
 
-    errors.append(valid_shred_syntax)
+    valid_shred_syntax(lines, errors)
 
     for line_number, line in enumerate(lines, start=1):
         if Markers.START.value in line:
@@ -109,27 +109,6 @@ def check_syntax(lines: List[str]) -> None:
         raise plug.PlugError(errors)
 
 
-def valid_shred_syntax(lines: List[str]) -> [str]:
-    """Tells us whether or not the text has valid usage of the shred marker.
-    Valid syntax is if on every line other than the first, there are no SHRED
-    markers.
-
-    Args:
-        lines: The file to check syntax for as a list of one string per line.
-    Returns:
-        A List of strings describing all errors found.
-    """
-    errors = []
-    for line_number, line in enumerate(lines[1:], start=2):
-        for marker in Markers:
-            if marker.value in line:
-                errors.append(
-                    f"Line: {line_number}: SHRED marker must be on the "
-                    "first line in a file"
-                )
-    return errors
-
-
 def file_is_dirty(
     relpath: _fileutils.RelativePath, repo_root: pathlib.Path
 ) -> bool:
@@ -151,3 +130,30 @@ def file_is_dirty(
             if marker.value in line:
                 return True
     return False
+
+
+def valid_shred_syntax(lines: List[str], errors: [str]) -> None:
+    """Tells us whether or not the text has valid usage of the shred marker.
+    Valid syntax is, if the shred marker is on the first line of text, then on
+    every line other than the first, there should be no markers. If there is
+    is no shred marker on the first line, then there should not be one later.
+
+    Args:
+        lines: The file to check syntax for as a list of one string per line.
+        errors: The list to send any found errors.
+    """
+    if Markers.SHRED.value in lines[0]:
+        for line_number, line in enumerate(lines[1:], start=2):
+            for marker in Markers:
+                if marker.value in line:
+                    errors.append(
+                        f"Line: {line_number}: Found marker "
+                        "after SHRED marker."
+                    )
+    else:
+        for line_number, line in enumerate(lines[1:], start=2):
+            if Markers.SHRED.value in line:
+                errors.append(
+                    f"Line: {line_number}: Found SHRED marker on line "
+                    "other than the first."
+                )
