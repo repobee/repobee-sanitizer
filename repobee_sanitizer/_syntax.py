@@ -20,6 +20,7 @@ class Markers(enum.Enum):
     START = "REPOBEE-SANITIZER-START"
     REPLACE = "REPOBEE-SANITIZER-REPLACE-WITH"
     END = "REPOBEE-SANITIZER-END"
+    SHRED = "REPOBEE-SANITIZER-SHRED"
 
 
 def check_syntax(lines: List[str]) -> None:
