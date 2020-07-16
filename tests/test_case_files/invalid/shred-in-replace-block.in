@@ -1,0 +1,23 @@
+class StackTest {
+    @Test
+    public void topIsLastPushedValue() {
+///REPOBEE-SANITIZER-START
+        // Arrange
+        int value = 1338;
+
+        // Act
+        emptyStack.push(value);
+        stack.push(value);
+
+        int emptyStackTop = emptyStack.top();
+        int stackTop = stack.top();
+
+        // Assert
+        assertThat(emptyStackTop, equalTo(value));
+        assertThat(stackTop, equalTo(value));
+//REPOBEE-SANITIZER-REPLACE-WITH
+//        fail("Not implemented");
+//        REPOBEE-SANITIZER-SHRED
+//REPOBEE-SANITIZER-END
+    }
+}
