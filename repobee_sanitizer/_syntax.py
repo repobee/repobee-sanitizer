@@ -66,6 +66,9 @@ def check_syntax(lines: List[str]) -> None:
     errors = []
     prefix = ""
     has_blocks = False
+
+    errors.append(valid_shred_syntax)
+
     for line_number, line in enumerate(lines, start=1):
         if Markers.START.value in line:
             has_blocks = True
