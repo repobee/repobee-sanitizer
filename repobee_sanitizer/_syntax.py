@@ -66,6 +66,9 @@ def check_syntax(lines: List[str]) -> None:
     prefix = ""
     has_blocks = False
 
+    if _contained_marker(lines[0]) == Markers.SHRED:
+        has_blocks = True
+
     errors = _check_shred_syntax(lines)
     if errors:
         raise plug.PlugError(errors)
