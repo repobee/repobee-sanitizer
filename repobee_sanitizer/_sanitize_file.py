@@ -32,7 +32,8 @@ class SanitizeFile(plug.Plugin):
             output.
         """
         result = _sanitize.sanitize_file(args.infile)
-        args.outfile.write_text(result, encoding="utf8")
+        if result:
+            args.outfile.write_text(result, encoding="utf8")
 
     @plug.repobee_hook
     def create_extension_command(self) -> plug.ExtensionCommand:
