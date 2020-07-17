@@ -151,7 +151,7 @@ def _check_shred_syntax(lines: List[str]) -> List[str]:
             errors.append(
                 f"Line {line_number}: SHRED marker only allowed on line 1"
             )
-        elif marker != Markers.SHRED and has_shred_marker:
+        elif marker not in [None, Markers.SHRED] and has_shred_marker:
             errors.append(
                 f"Line {line_number}: Marker is dissallowed after shred "
                 "marker"
