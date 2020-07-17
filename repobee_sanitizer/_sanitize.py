@@ -12,6 +12,18 @@ from typing import List, Iterable, Optional
 
 
 def sanitize_file(file_abs_path: pathlib.Path) -> Optional[str]:
+    """Runs the sanitization protocol on a given file. This can either remove
+    the file or give back a sanitized version
+
+    Args:
+        file_abs_path:
+            The absolute file path to the file you wish to sanitize.
+
+    Returns:
+        Optional[str]:
+            We return the sanitized output text, but only if the file
+            was not removed.
+    """
     text = file_abs_path.read_text()
     lines = text.split("\n")
     _syntax.check_syntax(lines)
@@ -23,6 +35,11 @@ def sanitize_file(file_abs_path: pathlib.Path) -> Optional[str]:
 
 
 def sanitize_text(content: str) -> str:
+    """A function to directly sanitize given content.
+
+    Args:
+        Content to be sanitized.
+    """
     lines = content.split("\n")
     _syntax.check_syntax(lines)
     sanitized_string = _sanitize(lines)
