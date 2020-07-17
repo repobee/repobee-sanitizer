@@ -113,6 +113,33 @@ def test_sanitize_repo_discover_mode_target_branch_with_binary_files(
     assert_expected_text_in_files(fake_repo.file_infos)
 
 
+def test_sanitize_repo_discover_mode_removes_file_with_shred_marker(
+    sanitizer_config, fake_repo
+):
+    """Test that sanitize-repo does not send any files that contain a shred
+    marker to target-branch
+    """
+    file_name = "valid-shred-marker.in"
+    file_src_path = testhelpers.get_resource(file_name)
+    file_dst_path = fake_repo.path / file_name
+    shutil.copy(file_src_path, file_dst_path)
+
+    fake_repo.repo.git.add(file_dst_path)
+    fake_repo.repo.git.commit("-m", "Add shred file")
+
+    target_branch = "student-version"
+    repobee.main(
+        f"repobee --config-file {sanitizer_config} sanitize-repo "
+        f"--target-branch {target_branch} "
+        f"--discover-files "
+        f"--repo-root {fake_repo.path}".split()
+    )
+
+    fake_repo.repo.git.checkout(target_branch)
+    fake_repo.repo.git.reset("--hard")
+    assert not file_dst_path.is_file()
+
+
 def test_sanitize_repo_with_target_branch_does_not_mutate_worktree(
     sanitizer_config, fake_repo
 ):
