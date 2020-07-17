@@ -3,20 +3,26 @@
 .. module:: _sanitize_file
     :synopsis: Module for file sanitization functionality.
 """
+import pathlib
+
 from repobee_sanitizer import _syntax
 
 import re
-from typing import List, Iterable
+from typing import List, Iterable, Optional
 
 
-def sanitize(content: str) -> str:
-    """Create a sanitized version of the input.
+def sanitize_file(file_abs_path: pathlib.Path) -> Optional[str]:
+    text = file_abs_path.read_text()
+    lines = text.split("\n")
+    _syntax.check_syntax(lines)
+    if _syntax.Markers.SHRED.value in lines[0]:
+        file_abs_path.unlink()
+    else:
+        sanitized_string = _sanitize(lines)
+        return "\n".join(sanitized_string)
 
-    Args:
-        content: Raw file content to be sanitized.
-    Returns:
-        A sanitized version of the input.
-    """
+
+def sanitize_text(content: str) -> str:
     lines = content.split("\n")
     _syntax.check_syntax(lines)
     sanitized_string = _sanitize(lines)

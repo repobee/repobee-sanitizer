@@ -168,10 +168,15 @@ def _sanitize_files(
 ) -> None:
     """Sanitize the provided files."""
     for relpath in file_relpaths:
-        text = relpath.read_text_relative_to(basedir)
-        sanitized_text = _sanitize.sanitize(text)
-        relpath.write_text_relative_to(data=sanitized_text, basedir=basedir)
-        LOGGER.info(f"Sanitized {relpath}")
+        file_abspath = basedir / str(relpath)
+        sanitized_text = _sanitize.sanitize_file(file_abspath)
+        if sanitized_text:
+            relpath.write_text_relative_to(
+                data=sanitized_text, basedir=basedir
+            )
+            LOGGER.info(f"Sanitized {relpath}")
+        else:
+            LOGGER.info(f"Shredded file {relpath}")
 
 
 def _sanitize_to_target_branch(

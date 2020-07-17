@@ -30,8 +30,7 @@ class SanitizeFile(plug.Plugin):
             A mapping (str -> List[plug.Result]) that RepoBee's CLI can use for
             output.
         """
-        text = args.infile.read_text(encoding="utf8")
-        result = _sanitize.sanitize(text)
+        result = _sanitize.sanitize_file(args.infile)
         args.outfile.write_text(result, encoding="utf8")
 
     @plug.repobee_hook
