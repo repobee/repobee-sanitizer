@@ -34,7 +34,8 @@ def check_syntax(lines: List[str]) -> None:
     .. code-block:: raw
 
         FILE ::=
-            MARKERLESS_LINE* ((BLOCK | PREFIXED_BLOCK) MARKERLESS_LINE*)+
+            SHRED_MARKER |
+            (MARKERLESS_LINE* ((BLOCK | PREFIXED_BLOCK) MARKERLESS_LINE*)+)
         BLOCK ::=
             START_MARKER
             MARKERLESS_LINE*
@@ -50,6 +51,7 @@ def check_syntax(lines: List[str]) -> None:
         START_MARKER ::= "REPOBEE-SANITIZER-START\n"
         REPLACE_MARKER ::= "REPOBEE-SANITIZER-REPLACE-WITH\n"
         END_MARKER ::= "REPOBEE-SANITIZER-END\n"
+        SHRED_MARKER :: = "REPOBEE-SANITIZER-SHRED"
         MARKERLESS_LINE ::= line without sanitizer markers
         PREFIX ::= a sequence of characters that is defined for each block
             as any sequence that appears before the START_MARKER of that
@@ -140,7 +142,8 @@ def _check_shred_syntax(lines: List[str]) -> List[str]:
     no shred marker on the first line, then there should not be one later.
 
     Args:
-        lines: The file to check syntax for as a list of one string per line.
+        lines: The file to check syntax for as a list of one string per
+        line.
     Returns:
         A list including all found errors
     """
