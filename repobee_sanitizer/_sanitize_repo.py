@@ -35,13 +35,9 @@ class SanitizeRepo(plug.Plugin):
     ) -> Optional[plug.Result]:
         message = _check_repo_state(args.repo_root)
         if message and not args.force:
-            return {
-                plug.Result(
-                    name="sanitize-repo",
-                    msg=message,
-                    status=plug.Status.ERROR,
-                )
-            }
+            return plug.Result(
+                name="sanitize-repo", msg=message, status=plug.Status.ERROR,
+            )
 
         assert args.file_list or args.discover_files, "Missing arguments"
         file_relpaths = (
@@ -59,13 +55,11 @@ class SanitizeRepo(plug.Plugin):
                 args.repo_root, file_relpaths, args.target_branch
             )
 
-        return {
-            plug.Result(
-                name="sanitize-repo",
-                msg="Successfully sanitized repo",
-                status=plug.Status.SUCCESS,
-            )
-        }
+        return plug.Result(
+            name="sanitize-repo",
+            msg="Successfully sanitized repo",
+            status=plug.Status.SUCCESS,
+        )
 
     def create_extension_command(self) -> plug.ExtensionCommand:
         """

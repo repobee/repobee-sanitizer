@@ -209,18 +209,10 @@ def test_sanitize_repo_returns_fail_when_repo_has_staged_changes(
         "--no-commit"
     )
 
-    results = result["sanitizer"]
-
-    found = False
-    for res in results:
-        if (
-            res.status == plug.Status.ERROR
-            and "uncommitted staged file" in res.msg
-        ):
-            found = True
-            break
-
-    assert found
+    assert (
+        result.status == plug.Status.ERROR
+        and "uncommitted staged file" in result.msg
+    )
 
 
 def test_sanitize_repo_return_fail_when_has_unstaged_changes(
@@ -235,18 +227,10 @@ def test_sanitize_repo_return_fail_when_has_unstaged_changes(
         "--no-commit"
     )
 
-    results = result["sanitizer"]
-
-    found = False
-    for res in results:
-        if (
-            res.status == plug.Status.ERROR
-            and "uncommitted unstaged file" in res.msg
-        ):
-            found = True
-            break
-
-    assert found
+    assert (
+        result.status == plug.Status.ERROR
+        and "uncommitted unstaged file" in result.msg
+    )
 
 
 def test_sanitize_repo_return_fail_when_has_untracked_files(
@@ -262,15 +246,9 @@ def test_sanitize_repo_return_fail_when_has_untracked_files(
         "--no-commit"
     )
 
-    results = result["sanitizer"]
-
-    found = False
-    for res in results:
-        if res.status == plug.Status.ERROR and "untracked file" in res.msg:
-            found = True
-            break
-
-    assert found
+    assert (
+        result.status == plug.Status.ERROR and "untracked file" in result.msg
+    )
 
 
 def test_sanitize_repo_returns_success_status(sanitizer_config, fake_repo):
@@ -285,18 +263,10 @@ def test_sanitize_repo_returns_success_status(sanitizer_config, fake_repo):
         f"--target-branch {target_branch} "
     )
 
-    results = result["sanitizer"]
-
-    found = False
-    for res in results:
-        if (
-            res.status == plug.Status.SUCCESS
-            and "Successfully sanitized repo" in res.msg
-        ):
-            found = True
-            break
-
-    assert found
+    assert (
+        result.status == plug.Status.SUCCESS
+        and "Successfully sanitized repo" in result.msg
+    )
 
 
 def test_sanitize_repo_passes_with_force_flag(sanitizer_config, fake_repo):
