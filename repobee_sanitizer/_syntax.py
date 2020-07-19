@@ -64,10 +64,7 @@ def check_syntax(lines: List[str]) -> None:
     """
     last = Markers.END.value
     prefix = ""
-    has_blocks = False
-
-    if _contained_marker(lines[0]) == Markers.SHRED:
-        has_blocks = True
+    has_blocks = _contained_marker(lines[0]) == Markers.SHRED
 
     errors = _check_shred_syntax(lines)
     if errors:
@@ -140,23 +137,26 @@ def _check_shred_syntax(lines: List[str]) -> List[str]:
     """Tells us whether or not the text has valid usage of the shred marker.
     Valid syntax is, if a shred marker is on the first line of text then on
     every line other than the first, there should be no markers. If there is
-    is no shred marker on the first line, then there should not be one later.
+    no shred marker on the first line, then there should not be one later.
 
     Args:
         lines: The file to check syntax for as a list of one string per line.
-        errors: The list to send any found errors.
+    Returns:
+        A list including all found errors
     """
     errors = []
-    has_shred_marker = Markers.SHRED.value in lines[0] if lines else False
+    has_shred_marker = (
+        _contained_marker(lines[0] if lines else "") == Markers.SHRED
+    )
     for line_number, line in enumerate(lines, start=1):
         marker = _contained_marker(line)
         if marker == Markers.SHRED and line_number != 1:
             errors.append(
                 f"Line {line_number}: SHRED marker only allowed on line 1"
             )
-        elif marker not in [None, Markers.SHRED] and has_shred_marker:
+        elif marker and marker != Markers.SHRED and has_shred_marker:
             errors.append(
-                f"Line {line_number}: Marker is dissallowed after shred "
+                f"Line {line_number}: Marker is dissallowed after SHRED "
                 "marker"
             )
 
