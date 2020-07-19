@@ -152,6 +152,36 @@ for `repobee-sanitizer` to work, marker syntax must be correct, this includes sp
 
 If a marker is incorrectly spelled, `repobee-sanitizer` will report an error.
 
+The syntax for a `repobee-sanitizer` "compatible" file can also be described using the following EBNF syntax:
+
+```
+FILE ::=
+        SHRED_MARKER |
+        (MARKERLESS_LINE* ((BLOCK | PREFIXED_BLOCK) MARKERLESS_LINE*)+)
+    BLOCK ::=
+        START_MARKER
+        MARKERLESS_LINE*
+        (REPLACE_MARKER
+        MARKERLESS_LINE*)?
+        END_MARKER
+    PREFIXED_BLOCK ::=
+        PREFIX START_MARKER
+        MARKERLESS_LINE*
+        (PREFIX REPLACE_MARKER
+        (PREFIX MARKERLESS_LINE)*)?
+        PREFIX END_MARKER
+    START_MARKER ::= "REPOBEE-SANITIZER-START\n"
+    REPLACE_MARKER ::= "REPOBEE-SANITIZER-REPLACE-WITH\n"
+    END_MARKER ::= "REPOBEE-SANITIZER-END\n"
+    SHRED_MARKER :: = "REPOBEE-SANITIZER-SHRED"
+    MARKERLESS_LINE ::= line without sanitizer markers
+    PREFIX ::= a sequence of characters that is defined for each block
+        as any sequence that appears before the START_MARKER of that
+        particular PREFIXED_BLOCK.
+```
+
+Note that the syntax is not context- free as prefixes are defined on a per-block basis, so it's not possible to perfectly describe the syntax with EBNF.
+
 # License
 
 See [LICENSE](LICENSE) for details.
