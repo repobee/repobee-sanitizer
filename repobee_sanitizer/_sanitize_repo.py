@@ -10,7 +10,7 @@ import argparse
 import shutil
 import tempfile
 
-from typing import Optional, Mapping, List
+from typing import Optional, List
 
 import repobee_plug as plug
 import daiquiri
@@ -32,17 +32,15 @@ class SanitizeRepo(plug.Plugin):
 
     def _sanitize_repo(
         self, args: argparse.Namespace, api: None,
-    ) -> Optional[Mapping[str, List[plug.Result]]]:
+    ) -> Optional[plug.Result]:
         message = _check_repo_state(args.repo_root)
         if message and not args.force:
             return {
-                PLUGIN_NAME: [
-                    plug.Result(
-                        name="sanitize-repo",
-                        msg=message,
-                        status=plug.Status.ERROR,
-                    )
-                ]
+                plug.Result(
+                    name="sanitize-repo",
+                    msg=message,
+                    status=plug.Status.ERROR,
+                )
             }
 
         assert args.file_list or args.discover_files, "Missing arguments"
@@ -62,13 +60,11 @@ class SanitizeRepo(plug.Plugin):
             )
 
         return {
-            PLUGIN_NAME: [
-                plug.Result(
-                    name="sanitize-repo",
-                    msg="Successfully sanitized repo",
-                    status=plug.Status.SUCCESS,
-                )
-            ]
+            plug.Result(
+                name="sanitize-repo",
+                msg="Successfully sanitized repo",
+                status=plug.Status.SUCCESS,
+            )
         }
 
     def create_extension_command(self) -> plug.ExtensionCommand:
