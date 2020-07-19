@@ -156,7 +156,7 @@ The syntax for a `repobee-sanitizer` "compatible" file can also be described usi
 
 ```
 FILE ::=
-        SHRED_MARKER |
+        SHRED_MARKER MARKERLESS_LINE+ |
         (MARKERLESS_LINE* ((BLOCK | PREFIXED_BLOCK) MARKERLESS_LINE*)+)
     BLOCK ::=
         START_MARKER
