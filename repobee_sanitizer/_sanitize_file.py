@@ -7,7 +7,7 @@
 
 import argparse
 import pathlib
-from typing import List, Mapping, Optional
+from typing import Optional
 
 import repobee_plug as plug
 
@@ -20,9 +20,9 @@ PLUGIN_NAME = "sanitizer"
 class SanitizeFile(plug.Plugin):
     def _sanitize_file(
         self, args: argparse.Namespace, api: plug.API
-    ) -> Optional[Mapping[str, List[plug.Result]]]:
+    ) -> Optional[plug.Result]:
         """A callback function that runs the sanitization protocol on a given
-        file
+        file.
 
         Args:
             args: Parsed and processed args from the RepoBee CLI.
