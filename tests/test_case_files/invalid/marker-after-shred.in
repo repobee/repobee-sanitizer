@@ -1,4 +1,3 @@
-
 //REPOBEE-SANITIZER-SHRED
 class StackTest {
     @Test
