@@ -39,21 +39,13 @@ class SanitizeRepo(plug.Plugin):
                 name="sanitize-repo", msg=message, status=plug.Status.ERROR,
             )
 
-        assert args.file_list or args.discover_files, "Missing arguments"
-        file_relpaths = (
-            _parse_file_list(args.file_list, args.repo_root)
-            if args.file_list
-            else _discover_dirty_files(args.repo_root)
-        )
-
         if args.no_commit:
             LOGGER.info("Executing dry run")
+            file_relpaths = _discover_dirty_files(args.repo_root)
             _sanitize_files(args.repo_root, file_relpaths)
         else:
             LOGGER.info(f"Sanitizing repo and updating {args.target_branch}")
-            _sanitize_to_target_branch(
-                args.repo_root, file_relpaths, args.target_branch
-            )
+            _sanitize_to_target_branch(args.repo_root, args.target_branch)
 
         return plug.Result(
             name="sanitize-repo",
@@ -74,23 +66,6 @@ class SanitizeRepo(plug.Plugin):
             type=pathlib.Path,
             metavar="path",
             default=pathlib.Path("."),
-        )
-
-        files_mutex_grp = parser.add_mutually_exclusive_group(required=True)
-        files_mutex_grp.add_argument(
-            "-f",
-            "--file-list",
-            help="Path to a list of files to sanitize. The paths should be "
-            "relative to the root of the repository.",
-            type=pathlib.Path,
-            metavar="path",
-        )
-        files_mutex_grp.add_argument(
-            "-d",
-            "--discover-files",
-            help="Find and sanitize all files in the repository that contain "
-            "at least one sanitizer marker.",
-            action="store_true",
         )
         parser.add_argument(
             "--force",
@@ -118,22 +93,6 @@ class SanitizeRepo(plug.Plugin):
             description="Sanitize the current repository.",
             callback=self._sanitize_repo,
         )
-
-
-def _parse_file_list(
-    file_list: pathlib.Path, repo_root: pathlib.Path
-) -> List[_fileutils.RelativePath]:
-    if not file_list.is_file():
-        raise plug.PlugError(f"No such file: {file_list}")
-
-    return [
-        _fileutils.create_relpath(repo_root / p.strip(), repo_root)
-        for p in file_list.read_text(
-            encoding=_fileutils.guess_encoding(file_list)
-        )
-        .strip()
-        .split("\n")
-    ]
 
 
 def _discover_dirty_files(
@@ -170,9 +129,7 @@ def _sanitize_files(
 
 
 def _sanitize_to_target_branch(
-    repo_path: pathlib.Path,
-    file_relpaths: List[_fileutils.RelativePath],
-    target_branch: str,
+    repo_path: pathlib.Path, target_branch: str,
 ) -> None:
     """Create a commit on the target branch of the specified repo with
     sanitized versions of the provided files, without modifying the
@@ -188,6 +145,7 @@ def _sanitize_to_target_branch(
         repo_copy_path = pathlib.Path(tmpdir) / "repo"
         shutil.copytree(src=repo_path, dst=repo_copy_path)
         _clean_repo(repo_copy_path)
+        file_relpaths = _discover_dirty_files(repo_copy_path)
         _sanitize_files(repo_copy_path, file_relpaths)
         _git_commit_on_branch(repo_copy_path, target_branch)
         _git_fetch(
