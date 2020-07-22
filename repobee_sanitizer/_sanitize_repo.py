@@ -39,12 +39,7 @@ class SanitizeRepo(plug.Plugin):
                 name="sanitize-repo", msg=message, status=plug.Status.ERROR,
             )
 
-        assert args.file_list or args.discover_files, "Missing arguments"
-        file_relpaths = (
-            _parse_file_list(args.file_list, args.repo_root)
-            if args.file_list
-            else _discover_dirty_files(args.repo_root)
-        )
+        file_relpaths = _discover_dirty_files(args.repo_root)
 
         if args.no_commit:
             LOGGER.info("Executing dry run")
@@ -75,23 +70,6 @@ class SanitizeRepo(plug.Plugin):
             metavar="path",
             default=pathlib.Path("."),
         )
-
-        files_mutex_grp = parser.add_mutually_exclusive_group(required=True)
-        files_mutex_grp.add_argument(
-            "-f",
-            "--file-list",
-            help="Path to a list of files to sanitize. The paths should be "
-            "relative to the root of the repository.",
-            type=pathlib.Path,
-            metavar="path",
-        )
-        files_mutex_grp.add_argument(
-            "-d",
-            "--discover-files",
-            help="Find and sanitize all files in the repository that contain "
-            "at least one sanitizer marker.",
-            action="store_true",
-        )
         parser.add_argument(
             "--force",
             help="Allow uncommitted and untracked files",
@@ -118,22 +96,6 @@ class SanitizeRepo(plug.Plugin):
             description="Sanitize the current repository.",
             callback=self._sanitize_repo,
         )
-
-
-def _parse_file_list(
-    file_list: pathlib.Path, repo_root: pathlib.Path
-) -> List[_fileutils.RelativePath]:
-    if not file_list.is_file():
-        raise plug.PlugError(f"No such file: {file_list}")
-
-    return [
-        _fileutils.create_relpath(repo_root / p.strip(), repo_root)
-        for p in file_list.read_text(
-            encoding=_fileutils.guess_encoding(file_list)
-        )
-        .strip()
-        .split("\n")
-    ]
 
 
 def _discover_dirty_files(
