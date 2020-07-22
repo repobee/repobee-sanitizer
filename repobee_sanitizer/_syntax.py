@@ -34,7 +34,7 @@ def check_syntax(lines: List[str]) -> None:
     .. code-block:: raw
 
         FILE ::=
-            SHRED_MARKER MARKERLESS_LINE |
+            SHRED_MARKER MARKERLESS_LINE* |
             (MARKERLESS_LINE* ((BLOCK | PREFIXED_BLOCK) MARKERLESS_LINE*)+)
         BLOCK ::=
             START_MARKER
