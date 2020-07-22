@@ -6,7 +6,7 @@
 """
 import enum
 import pathlib
-from typing import List
+from typing import List, Optional
 
 import re
 import repobee_plug as plug
@@ -20,6 +20,7 @@ class Markers(enum.Enum):
     START = "REPOBEE-SANITIZER-START"
     REPLACE = "REPOBEE-SANITIZER-REPLACE-WITH"
     END = "REPOBEE-SANITIZER-END"
+    SHRED = "REPOBEE-SANITIZER-SHRED"
 
 
 def check_syntax(lines: List[str]) -> None:
@@ -33,7 +34,8 @@ def check_syntax(lines: List[str]) -> None:
     .. code-block:: raw
 
         FILE ::=
-            MARKERLESS_LINE* ((BLOCK | PREFIXED_BLOCK) MARKERLESS_LINE*)+
+            SHRED_MARKER MARKERLESS_LINE* |
+            (MARKERLESS_LINE* ((BLOCK | PREFIXED_BLOCK) MARKERLESS_LINE*)+)
         BLOCK ::=
             START_MARKER
             MARKERLESS_LINE*
@@ -49,6 +51,7 @@ def check_syntax(lines: List[str]) -> None:
         START_MARKER ::= "REPOBEE-SANITIZER-START\n"
         REPLACE_MARKER ::= "REPOBEE-SANITIZER-REPLACE-WITH\n"
         END_MARKER ::= "REPOBEE-SANITIZER-END\n"
+        SHRED_MARKER :: = "REPOBEE-SANITIZER-SHRED"
         MARKERLESS_LINE ::= line without sanitizer markers
         PREFIX ::= a sequence of characters that is defined for each block
             as any sequence that appears before the START_MARKER of that
@@ -62,9 +65,13 @@ def check_syntax(lines: List[str]) -> None:
         plug.PlugError: Invalid Syntax.
     """
     last = Markers.END.value
-    errors = []
     prefix = ""
-    has_blocks = False
+    has_blocks = _contained_marker(lines[0]) == Markers.SHRED
+
+    errors = _check_shred_syntax(lines)
+    if errors:
+        raise plug.PlugError(errors)
+
     for line_number, line in enumerate(lines, start=1):
         if Markers.START.value in line:
             has_blocks = True
@@ -126,3 +133,41 @@ def file_is_dirty(
             if marker.value in line:
                 return True
     return False
+
+
+def _check_shred_syntax(lines: List[str]) -> List[str]:
+    """Tells us whether or not the text has valid usage of the shred marker.
+    Valid syntax is, if a shred marker is on the first line of text then on
+    every line other than the first, there should be no markers. If there is
+    no shred marker on the first line, then there should not be one later.
+
+    Args:
+        lines: The file to check syntax for as a list of one string per
+        line.
+    Returns:
+        A list including all found errors
+    """
+    errors = []
+    has_shred_marker = (
+        _contained_marker(lines[0] if lines else "") == Markers.SHRED
+    )
+    for line_number, line in enumerate(lines, start=1):
+        marker = _contained_marker(line)
+        if marker == Markers.SHRED and line_number != 1:
+            errors.append(
+                f"Line {line_number}: SHRED marker only allowed on line 1"
+            )
+        elif marker and marker != Markers.SHRED and has_shred_marker:
+            errors.append(
+                f"Line {line_number}: Marker is dissallowed after SHRED "
+                "marker"
+            )
+
+    return errors
+
+
+def _contained_marker(line: str) -> Optional[Markers]:
+    for marker in Markers:
+        if marker.value in line:
+            return marker
+    return None

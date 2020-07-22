@@ -21,7 +21,8 @@ class SanitizeFile(plug.Plugin):
     def _sanitize_file(
         self, args: argparse.Namespace, api: plug.API
     ) -> Optional[plug.Result]:
-        """A callback function that does nothing useful.
+        """A callback function that runs the sanitization protocol on a given
+        file.
 
         Args:
             args: Parsed and processed args from the RepoBee CLI.
@@ -30,9 +31,9 @@ class SanitizeFile(plug.Plugin):
             A mapping (str -> List[plug.Result]) that RepoBee's CLI can use for
             output.
         """
-        text = args.infile.read_text(encoding="utf8")
-        result = _sanitize.sanitize(text)
-        args.outfile.write_text(result, encoding="utf8")
+        result = _sanitize.sanitize_file(args.infile)
+        if result:
+            args.outfile.write_text(result, encoding="utf8")
 
     @plug.repobee_hook
     def create_extension_command(self) -> plug.ExtensionCommand:

@@ -149,6 +149,9 @@ for `repobee-sanitizer` to work, marker syntax must be correct, this includes sp
 - REPOBEE-SANITIZER-END
     - REQUIRED: Must exist for each start block
     - Indicates the end of a block.
+- REPOBEE_SANITIZER-SHRED
+    - OPTIONAL: Can only exist on the first line of a file. If this exists, there cannot be any other markers of any type in the file
+    - Having this marker will remove the entire file when running the `sanitize-repo` or `sanitize-file` commands
 
 If a marker is incorrectly spelled, `repobee-sanitizer` will report an error.
 
