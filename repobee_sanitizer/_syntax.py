@@ -64,45 +64,46 @@ def check_syntax(lines: List[str]) -> None:
     Raises:
         plug.PlugError: Invalid Syntax.
     """
-    last = Markers.END.value
+    last = Markers.END
     prefix = ""
-    has_blocks = _contained_marker(lines[0]) == Markers.SHRED
+    has_blocks = contained_marker(lines[0]) == Markers.SHRED
 
     errors = _check_shred_syntax(lines)
     if errors:
         raise plug.PlugError(errors)
 
     for line_number, line in enumerate(lines, start=1):
-        if Markers.START.value in line:
+        marker = contained_marker(line)
+        if marker == Markers.START:
             has_blocks = True
-            if last != Markers.END.value:
+            if last != Markers.END:
                 errors.append(
                     f"Line {line_number}: "
                     "START block must begin file or follow an END block"
                 )
             prefix = re.match(rf"(.*?){Markers.START.value}", line).group(1)
-            last = Markers.START.value
-        elif Markers.REPLACE.value in line:
-            if last != Markers.START.value:
+            last = Markers.START
+        elif marker == Markers.REPLACE:
+            if last != Markers.START:
                 errors.append(
                     f"Line {line_number}: "
                     "REPLACE-WITH block must follow START block"
                 )
-            last = Markers.REPLACE.value
-        elif Markers.END.value in line:
-            if last not in [Markers.START.value, Markers.REPLACE.value]:
+            last = Markers.REPLACE
+        elif marker == Markers.END:
+            if last not in [Markers.START, Markers.REPLACE]:
                 errors.append(
                     f"Line {line_number}: "
                     "END block must follow START or REPLACE block"
                 )
-            last = Markers.END.value
+            last = Markers.END
 
         if (
-            last == Markers.REPLACE.value or Markers.END.value in line
+            last == Markers.REPLACE or marker == Markers.END
         ) and not line.startswith(prefix):
             errors.append(f"Line {line_number}: Missing prefix")
 
-    if last != Markers.END.value:
+    if last != Markers.END:
         errors.append("Final block must be an END block")
 
     if not has_blocks:
@@ -127,12 +128,8 @@ def file_is_dirty(
     if relpath.is_binary:
         return False
 
-    content = relpath.read_text_relative_to(repo_root).split("\n")
-    for line in content:
-        for marker in Markers:
-            if marker.value in line:
-                return True
-    return False
+    lines = relpath.read_text_relative_to(repo_root).split("\n")
+    return any(map(contained_marker, lines))
 
 
 def _check_shred_syntax(lines: List[str]) -> List[str]:
@@ -149,10 +146,10 @@ def _check_shred_syntax(lines: List[str]) -> List[str]:
     """
     errors = []
     has_shred_marker = (
-        _contained_marker(lines[0] if lines else "") == Markers.SHRED
+        contained_marker(lines[0] if lines else "") == Markers.SHRED
     )
     for line_number, line in enumerate(lines, start=1):
-        marker = _contained_marker(line)
+        marker = contained_marker(line)
         if marker == Markers.SHRED and line_number != 1:
             errors.append(
                 f"Line {line_number}: SHRED marker only allowed on line 1"
@@ -166,7 +163,15 @@ def _check_shred_syntax(lines: List[str]) -> List[str]:
     return errors
 
 
-def _contained_marker(line: str) -> Optional[Markers]:
+def contained_marker(line: str) -> Optional[Markers]:
+    """Find any marker contained in the line of text.
+
+    Args:
+        line: A single line of text.
+    Returns:
+        A :py:class:Markers: contained in the line, or ``None`` if there is no
+        marker in the line.
+    """
     for marker in Markers:
         if marker.value in line:
             return marker
