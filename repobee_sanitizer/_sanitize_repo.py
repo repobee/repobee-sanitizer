@@ -39,16 +39,13 @@ class SanitizeRepo(plug.Plugin):
                 name="sanitize-repo", msg=message, status=plug.Status.ERROR,
             )
 
-        file_relpaths = _discover_dirty_files(args.repo_root)
-
         if args.no_commit:
             LOGGER.info("Executing dry run")
+            file_relpaths = _discover_dirty_files(args.repo_root)
             _sanitize_files(args.repo_root, file_relpaths)
         else:
             LOGGER.info(f"Sanitizing repo and updating {args.target_branch}")
-            _sanitize_to_target_branch(
-                args.repo_root, file_relpaths, args.target_branch
-            )
+            _sanitize_to_target_branch(args.repo_root, args.target_branch)
 
         return plug.Result(
             name="sanitize-repo",
@@ -132,9 +129,7 @@ def _sanitize_files(
 
 
 def _sanitize_to_target_branch(
-    repo_path: pathlib.Path,
-    file_relpaths: List[_fileutils.RelativePath],
-    target_branch: str,
+    repo_path: pathlib.Path, target_branch: str,
 ) -> None:
     """Create a commit on the target branch of the specified repo with
     sanitized versions of the provided files, without modifying the
@@ -150,6 +145,7 @@ def _sanitize_to_target_branch(
         repo_copy_path = pathlib.Path(tmpdir) / "repo"
         shutil.copytree(src=repo_path, dst=repo_copy_path)
         _clean_repo(repo_copy_path)
+        file_relpaths = _discover_dirty_files(repo_copy_path)
         _sanitize_files(repo_copy_path, file_relpaths)
         _git_commit_on_branch(repo_copy_path, target_branch)
         _git_fetch(
