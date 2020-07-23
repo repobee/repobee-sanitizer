@@ -149,6 +149,7 @@ def _sanitize_files(
         return files_with_errors
 
     for relpath in file_relpaths:
+        file_abspath = basedir / str(relpath)
         sanitized_text = _sanitize.sanitize_file(file_abspath)
         if sanitized_text:
             relpath.write_text_relative_to(

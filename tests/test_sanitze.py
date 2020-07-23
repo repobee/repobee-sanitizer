@@ -1,9 +1,8 @@
 """Test functions for the _sanitize_file module."""
 import pytest
+import pathlib
 
-from repobee_sanitizer import _sanitize
-
-import repobee_plug as plug
+from repobee_sanitizer import _sanitize, _syntax
 
 import testhelpers
 
@@ -18,11 +17,10 @@ import testhelpers
 
 
 @pytest.mark.parametrize(
-    "inp", INVALID_TEST_CASE_ARGS, ids=INVALID_TEST_CASE_IDS
+    "abs_path", INVALID_TEST_CASE_ARGS, ids=INVALID_TEST_CASE_IDS
 )
-def test_sanitize_invalid(inp: str):
-    with pytest.raises(plug.PlugError):
-        _sanitize.sanitize_text(inp)
+def test_sanitize_invalid(abs_path: pathlib.Path):
+    assert _syntax.check_syntax(abs_path.read_text().split("\n"))
 
 
 @pytest.mark.parametrize(
