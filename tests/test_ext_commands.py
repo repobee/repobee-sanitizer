@@ -305,10 +305,11 @@ class TestSanitizeRepo:
 
         target_branch = "student-version"
 
-        execute_sanitize_repo(
+        repobee.main(
+            f"repobee --config-file {sanitizer_config} sanitize-repo "
             f"--repo-root {fake_repo.path} "
             f"--target-branch {target_branch} "
-            "--force"
+            "--force".split()
         )
 
         # Assert that working tree has not been modified
