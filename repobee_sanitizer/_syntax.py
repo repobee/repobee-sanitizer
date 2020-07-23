@@ -6,12 +6,15 @@
 """
 import enum
 import pathlib
+import collections
 from typing import List, Optional
 
 import re
-import repobee_plug as plug
 
 from repobee_sanitizer import _fileutils
+
+
+Error = collections.namedtuple("Error", "line msg")
 
 
 class Markers(enum.Enum):
@@ -23,7 +26,7 @@ class Markers(enum.Enum):
     SHRED = "REPOBEE-SANITIZER-SHRED"
 
 
-def check_syntax(lines: List[str]) -> None:
+def check_syntax(lines: List[str]) -> List[Error]:
     """Checks if the input adheres to proper sanitizer syntax using proper
     markers:
 
@@ -62,7 +65,8 @@ def check_syntax(lines: List[str]) -> None:
         lines: List containing every line of a text file as one element in the
             list.
     Raises:
-        plug.PlugError: Invalid Syntax.
+        A list of named tuples containing all found errors and their line
+            number.
     """
     last = Markers.END
     prefix = ""
@@ -70,47 +74,41 @@ def check_syntax(lines: List[str]) -> None:
 
     errors = _check_shred_syntax(lines)
     if errors:
-        raise plug.PlugError(errors)
+        return errors
 
     for line_number, line in enumerate(lines, start=1):
+
+        def _error(msg):
+            errors.append(Error(line_number, msg))
+
         marker = contained_marker(line)
         if marker == Markers.START:
             has_blocks = True
             if last != Markers.END:
-                errors.append(
-                    f"Line {line_number}: "
-                    "START block must begin file or follow an END block"
-                )
+                _error("START block must begin file or follow an END block")
             prefix = re.match(rf"(.*?){Markers.START.value}", line).group(1)
             last = Markers.START
         elif marker == Markers.REPLACE:
             if last != Markers.START:
-                errors.append(
-                    f"Line {line_number}: "
-                    "REPLACE-WITH block must follow START block"
-                )
+                _error("REPLACE-WITH block must follow START block")
             last = Markers.REPLACE
         elif marker == Markers.END:
             if last not in [Markers.START, Markers.REPLACE]:
-                errors.append(
-                    f"Line {line_number}: "
-                    "END block must follow START or REPLACE block"
-                )
+                _error("END block must follow START or REPLACE block")
             last = Markers.END
 
         if (
             last == Markers.REPLACE or marker == Markers.END
         ) and not line.startswith(prefix):
-            errors.append(f"Line {line_number}: Missing prefix")
+            _error(f"Missing prefix: {prefix}")
 
     if last != Markers.END:
-        errors.append("Final block must be an END block")
+        errors.append(Error(None, "Global: Final block must be an END block"))
 
-    if not has_blocks:
-        errors.append("There are no markers in the file")
+    if not (has_blocks or errors):
+        errors.append(Error(None, "Global: There are no markers in the file"))
 
-    if errors:
-        raise plug.PlugError(errors)
+    return errors
 
 
 def file_is_dirty(
@@ -132,7 +130,7 @@ def file_is_dirty(
     return any(map(contained_marker, lines))
 
 
-def _check_shred_syntax(lines: List[str]) -> List[str]:
+def _check_shred_syntax(lines: List[str]) -> List[Error]:
     """Tells us whether or not the text has valid usage of the shred marker.
     Valid syntax is, if a shred marker is on the first line of text then on
     every line other than the first, there should be no markers. If there is
@@ -142,24 +140,22 @@ def _check_shred_syntax(lines: List[str]) -> List[str]:
         lines: The file to check syntax for as a list of one string per
         line.
     Returns:
-        A list including all found errors
+        A list of named tuples with all errors and their line numbers
     """
     errors = []
     has_shred_marker = (
         contained_marker(lines[0] if lines else "") == Markers.SHRED
     )
     for line_number, line in enumerate(lines, start=1):
+
+        def _error(msg):
+            errors.append(Error(line_number, msg))
+
         marker = contained_marker(line)
         if marker == Markers.SHRED and line_number != 1:
-            errors.append(
-                f"Line {line_number}: SHRED marker only allowed on line 1"
-            )
+            _error("SHRED marker only allowed on line 1")
         elif marker and marker != Markers.SHRED and has_shred_marker:
-            errors.append(
-                f"Line {line_number}: Marker is dissallowed after SHRED "
-                "marker"
-            )
-
+            _error("Marker is dissallowed after SHRED marker")
     return errors
 
 

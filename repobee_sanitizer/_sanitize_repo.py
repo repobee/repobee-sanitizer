@@ -9,6 +9,7 @@ import pathlib
 import argparse
 import shutil
 import tempfile
+import collections
 
 from typing import Optional, List
 
@@ -23,6 +24,11 @@ from repobee_sanitizer import _syntax
 PLUGIN_NAME = "sanitizer"
 
 LOGGER = daiquiri.getLogger(__file__)
+
+
+_FilesWithErrors = collections.namedtuple(
+    "_FileWithErrors", "file_rel_path Error"
+)
 
 
 class SanitizeRepo(plug.Plugin):
@@ -42,10 +48,24 @@ class SanitizeRepo(plug.Plugin):
         if args.no_commit:
             LOGGER.info("Executing dry run")
             file_relpaths = _discover_dirty_files(args.repo_root)
-            _sanitize_files(args.repo_root, file_relpaths)
+            errors = _sanitize_files(args.repo_root, file_relpaths)
+            if errors:
+                return plug.Result(
+                    name="sanitize-repo",
+                    msg=_format_error_string(errors),
+                    status=plug.Status.ERROR,
+                )
         else:
             LOGGER.info(f"Sanitizing repo and updating {args.target_branch}")
-            _sanitize_to_target_branch(args.repo_root, args.target_branch)
+            errors = _sanitize_to_target_branch(
+                args.repo_root, args.target_branch
+            )
+            if errors:
+                return plug.Result(
+                    name="sanitize-repo",
+                    msg=_format_error_string(errors),
+                    status=plug.Status.ERROR,
+                )
 
         return plug.Result(
             name="sanitize-repo",
@@ -114,10 +134,21 @@ def _discover_dirty_files(
 
 def _sanitize_files(
     basedir: pathlib.Path, file_relpaths: List[_fileutils.RelativePath]
-) -> None:
+) -> Optional[_FilesWithErrors]:
     """Sanitize the provided files."""
+    files_with_errors = []
+
     for relpath in file_relpaths:
         file_abspath = basedir / str(relpath)
+
+        errors = _syntax.check_syntax(file_abspath.read_text().split("\n"))
+        if errors:
+            files_with_errors.append(_FilesWithErrors(relpath, errors))
+
+    if files_with_errors:
+        return files_with_errors
+
+    for relpath in file_relpaths:
         sanitized_text = _sanitize.sanitize_file(file_abspath)
         if sanitized_text:
             relpath.write_text_relative_to(
@@ -128,9 +159,24 @@ def _sanitize_files(
             LOGGER.info(f"Shredded file {relpath}")
 
 
+def _format_error_string(files_with_errors: [_FilesWithErrors]) -> str:
+    formated_str = [
+        f"Syntax errors detected in {len(files_with_errors)} file(s):"
+    ]
+    for file in files_with_errors:
+        formated_str.append(f"\n{file.file_rel_path}")
+        for error in file.Error:
+            linestr = f"Line {error.line}: "
+            formated_str.append(
+                f"    {linestr if error.line else ''}{error.msg}"
+            )
+
+    return "\n".join(formated_str)
+
+
 def _sanitize_to_target_branch(
     repo_path: pathlib.Path, target_branch: str,
-) -> None:
+) -> Optional[_FilesWithErrors]:
     """Create a commit on the target branch of the specified repo with
     sanitized versions of the provided files, without modifying the
     working tree or HEAD of the repo.
@@ -146,7 +192,9 @@ def _sanitize_to_target_branch(
         shutil.copytree(src=repo_path, dst=repo_copy_path)
         _clean_repo(repo_copy_path)
         file_relpaths = _discover_dirty_files(repo_copy_path)
-        _sanitize_files(repo_copy_path, file_relpaths)
+        errors = _sanitize_files(repo_copy_path, file_relpaths)
+        if errors:
+            return errors
         _git_commit_on_branch(repo_copy_path, target_branch)
         _git_fetch(
             src_repo_path=repo_copy_path,
