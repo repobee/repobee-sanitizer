@@ -28,7 +28,7 @@ class SanitizeFile(plug.Plugin):
             platform API instance.
 
         Returns: An optional plug.PlugResult if the syntax is invalid,
-        otherwise nothing.
+            otherwise nothing.
         """
         errors = _syntax.check_syntax(args.infile.read_text().split("\n"))
         if errors:
