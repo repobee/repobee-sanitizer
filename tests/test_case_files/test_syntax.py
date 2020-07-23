@@ -6,7 +6,8 @@ import repobee_plug as plug
 
 def test_check_syntax_with_empty_string():
     """Check_syntax is a public function, therefore we have to check what
-    happens if we give it an empty string.
+    happens if we give it an empty string. If it returns a PlugError, we have
+    the proper behavior.
     """
     with pytest.raises(plug.PlugError) as exc:
         _syntax.check_syntax("")
