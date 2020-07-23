@@ -9,7 +9,7 @@ def test_check_syntax_with_empty_string():
     happens if we give it an empty string. If it returns a PlugError, we have
     the proper behavior.
     """
-    with pytest.raises(plug.PlugError) as exc:
+    with pytest.raises(plug.PlugError) as exc_info:
         _syntax.check_syntax("")
 
-    assert "There are no markers in the file" in str(exc.value)
+    assert "There are no markers in the file" in str(exc_info.value)
