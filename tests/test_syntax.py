@@ -12,4 +12,4 @@ def test_check_syntax_with_empty_string():
     with pytest.raises(plug.PlugError) as exc:
         _syntax.check_syntax("")
 
-    assert "There are no markers in the file" in exc.value
+    assert "There are no markers in the file" in str(exc.value)
