@@ -24,12 +24,11 @@ class SanitizeFile(plug.Plugin):
         """A callback function that runs the sanitization protocol on a given
         file.
 
-        Args:
-            args: Parsed and processed args from the RepoBee CLI.
-            api: A platform API instance.
-        Returns:
-            A mapping (str -> List[plug.Result]) that RepoBee's CLI can use for
-            output.
+        Args: args: Parsed and processed args from the RepoBee CLI. api: A
+            platform API instance.
+
+        Returns: An optional plug.PlugResult if the syntax is invalid,
+        otherwise nothing.
         """
         errors = _syntax.check_syntax(args.infile.read_text().split("\n"))
         if errors:

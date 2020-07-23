@@ -135,7 +135,9 @@ def _discover_dirty_files(
 def _sanitize_files(
     basedir: pathlib.Path, file_relpaths: List[_fileutils.RelativePath]
 ) -> Optional[_FilesWithErrors]:
-    """Sanitize the provided files."""
+    """Checks the syntax of the provided files and reports any found errors.
+    If any errors are found, report errors and exits. If there are no errors,
+    then all files are sanitized."""
     files_with_errors = []
 
     for relpath in file_relpaths:
@@ -161,6 +163,10 @@ def _sanitize_files(
 
 
 def _format_error_string(files_with_errors: [_FilesWithErrors]) -> str:
+    """Takes a list of named tuples containing a files name, and a list of
+    errors and what lines they are found on. The list is then converted into a
+    properly formatted string to be printed on the command line.
+    """
     formated_str = [
         f"Syntax errors detected in {len(files_with_errors)} file(s):"
     ]
@@ -187,6 +193,9 @@ def _sanitize_to_target_branch(
         file_relpaths: A list of paths relative to the root of the working
             tree that should be sanitized.
         target_branch: The branch to create the commit on.
+
+    Returns:
+        Optional list of errors.
     """
     with tempfile.TemporaryDirectory() as tmpdir:
         repo_copy_path = pathlib.Path(tmpdir) / "repo"
