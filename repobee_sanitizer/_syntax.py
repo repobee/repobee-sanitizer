@@ -66,7 +66,7 @@ def check_syntax(lines: List[str]) -> None:
     """
     last = Markers.END
     prefix = ""
-    has_blocks = contained_marker(lines[0]) == Markers.SHRED
+    has_blocks = lines and contained_marker(lines[0]) == Markers.SHRED
 
     errors = _check_shred_syntax(lines)
     if errors:
