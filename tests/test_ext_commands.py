@@ -59,9 +59,7 @@ class TestSanitizeFile:
 
         assert not file_src_path.is_file()
 
-    def test_invalid_file_return_error_status(
-        self, sanitizer_config, fake_repo
-    ):
+    def test_invalid_file_return_error_status(self, fake_repo):
         """Test that sanitize-file returns a PlugResult with status ERROR when
         file has invalid syntax
         """
@@ -237,6 +235,29 @@ class TestSanitizeRepo:
             other_file.read_text(sys.getdefaultencoding())
             == other_file_contents
         )
+
+    def test_target_branch_invalid_file_returns_error_status(self, fake_repo):
+        target_branch = "student-version"
+        file_name = "missing-end-marker.in"
+        file_src_path = fake_repo.path / file_name
+        shutil.copy(testhelpers.get_resource(file_name), file_src_path)
+
+        result = execute_sanitize_repo(
+            f"--repo-root {fake_repo.path} --target-branch {target_branch}"
+        )
+
+        assert result.status == plug.Status.ERROR
+
+    def test_no_commit_invalid_file_return_error_status(self, fake_repo):
+        file_name = "missing-end-marker.in"
+        file_src_path = fake_repo.path / file_name
+        shutil.copy(testhelpers.get_resource(file_name), file_src_path)
+
+        result = execute_sanitize_repo(
+            f"--repo-root {fake_repo.path} --no-commit"
+        )
+
+        assert result.status == plug.Status.ERROR
 
     def test_returns_fail_when_repo_has_staged_changes(
         self, sanitizer_config, fake_repo
