@@ -352,6 +352,14 @@ def execute_sanitize_repo(arguments: str):
     return result
 
 
+def execute_sanitize_file(arguments: str):
+    sanitize_file = sanitizer.SanitizeFile()
+    cmd = sanitize_file.create_extension_command()
+    args = cmd.parser.parse_args(arguments.split())
+    result = cmd.callback(args, None)
+    return result
+
+
 @pytest.fixture
 def fake_repo(tmpdir) -> _FakeRepoInfo:
     """Setup a fake repository to sanitize."""
