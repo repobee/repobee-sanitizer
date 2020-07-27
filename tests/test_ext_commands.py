@@ -67,6 +67,9 @@ class TestSanitizeFile:
         file_src_path = fake_repo.path / file_name
         shutil.copy(testhelpers.get_resource(file_name), file_src_path)
 
+        fake_repo.repo.git.add(file_src_path)
+        fake_repo.repo.git.commit("-m", "'Initial commit'")
+
         result = execute_sanitize_file(f"{file_src_path} {file_src_path}")
 
         assert (
@@ -243,22 +246,35 @@ class TestSanitizeRepo:
         file_src_path = fake_repo.path / file_name
         shutil.copy(testhelpers.get_resource(file_name), file_src_path)
 
+        fake_repo.repo.git.add(file_src_path)
+        fake_repo.repo.git.commit("-m", "'Initial commit'")
+
         result = execute_sanitize_repo(
             f"--repo-root {fake_repo.path} --target-branch {target_branch}"
         )
 
-        assert result.status == plug.Status.ERROR
+        assert (
+            result.status == plug.Status.ERROR
+            and "START block must begin file or follow an END block"
+            in result.msg
+        )
 
     def test_no_commit_invalid_file_return_error_status(self, fake_repo):
         file_name = "missing-end-marker.in"
         file_src_path = fake_repo.path / file_name
         shutil.copy(testhelpers.get_resource(file_name), file_src_path)
+        fake_repo.repo.git.add(file_src_path)
+        fake_repo.repo.git.commit("-m", "'Initial commit'")
 
         result = execute_sanitize_repo(
             f"--repo-root {fake_repo.path} --no-commit"
         )
 
-        assert result.status == plug.Status.ERROR
+        assert (
+            result.status == plug.Status.ERROR
+            and "START block must begin file or follow an END block"
+            in result.msg
+        )
 
     def test_returns_fail_when_repo_has_staged_changes(
         self, sanitizer_config, fake_repo
