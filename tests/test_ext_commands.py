@@ -35,6 +35,7 @@ class TestSanitizeFile:
         infile = pathlib.Path(tmpdir) / "input.in"
         infile.write_text(inp_text)
         outfile = pathlib.Path(tmpdir) / "output.out"
+        outfile.write_text("This should be replaced")
 
         repobee.main(
             f"repobee --config-file {sanitizer_config} sanitize-file "

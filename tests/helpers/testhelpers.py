@@ -45,7 +45,10 @@ def generate_valid_test_cases():
 def generate_invalid_test_cases():
     invalid_files = list(INVALID_CASES_BASEDIR.glob("*.in"))
     ids = [str(f.relative_to(INVALID_CASES_BASEDIR)) for f in invalid_files]
-    return [f.absolute() for f in invalid_files], ids
+    return (
+        [f.read_text(encoding="utf8").split("\n") for f in invalid_files],
+        ids,
+    )
 
 
 def read_valid_test_case_files(test_case_dir: pathlib.Path) -> Tuple[str, str]:

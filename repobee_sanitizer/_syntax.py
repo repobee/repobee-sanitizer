@@ -6,15 +6,11 @@
 """
 import enum
 import pathlib
-import collections
 from typing import List, Optional
 
 import re
 
-from repobee_sanitizer import _fileutils
-
-
-Error = collections.namedtuple("Error", "line msg")
+from repobee_sanitizer import _fileutils, _format
 
 
 class Markers(enum.Enum):
@@ -26,7 +22,7 @@ class Markers(enum.Enum):
     SHRED = "REPOBEE-SANITIZER-SHRED"
 
 
-def check_syntax(lines: List[str]) -> List[Error]:
+def check_syntax(lines: List[str]) -> List[_format.Error]:
     """Checks if the input adheres to proper sanitizer syntax using proper
     markers:
 
@@ -79,7 +75,7 @@ def check_syntax(lines: List[str]) -> List[Error]:
     for line_number, line in enumerate(lines, start=1):
 
         def _error(msg):
-            errors.append(Error(line_number, msg))
+            errors.append(_format.Error(line_number, msg))
 
         marker = contained_marker(line)
         if marker == Markers.START:
@@ -103,10 +99,10 @@ def check_syntax(lines: List[str]) -> List[Error]:
             _error(f"Missing prefix: {prefix}")
 
     if last != Markers.END:
-        errors.append(Error(None, "Global: Final block must be an END block"))
+        errors.append(_format.Error(None, "Final block must be an END block"))
 
     if not (has_blocks or errors):
-        errors.append(Error(None, "Global: There are no markers in the file"))
+        errors.append(_format.Error(None, "There are no markers in the file"))
 
     return errors
 
@@ -130,7 +126,7 @@ def file_is_dirty(
     return any(map(contained_marker, lines))
 
 
-def _check_shred_syntax(lines: List[str]) -> List[Error]:
+def _check_shred_syntax(lines: List[str]) -> List[_format.Error]:
     """Tells us whether or not the text has valid usage of the shred marker.
     Valid syntax is, if a shred marker is on the first line of text then on
     every line other than the first, there should be no markers. If there is
@@ -149,7 +145,7 @@ def _check_shred_syntax(lines: List[str]) -> List[Error]:
     for line_number, line in enumerate(lines, start=1):
 
         def _error(msg):
-            errors.append(Error(line_number, msg))
+            errors.append(_format.Error(line_number, msg))
 
         marker = contained_marker(line)
         if marker == Markers.SHRED and line_number != 1:

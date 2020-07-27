@@ -11,7 +11,7 @@ from typing import Optional
 
 import repobee_plug as plug
 
-from repobee_sanitizer import _sanitize, _syntax
+from repobee_sanitizer import _sanitize, _syntax, _format
 
 
 PLUGIN_NAME = "sanitizer"
@@ -24,22 +24,21 @@ class SanitizeFile(plug.Plugin):
         """A callback function that runs the sanitization protocol on a given
         file.
 
-        Args: args: Parsed and processed args from the RepoBee CLI. api: A
+        Args:
+            args: Parsed and processed args from the RepoBee CLI. api: A
             platform API instance.
 
-        Returns: An optional plug.PlugResult if the syntax is invalid,
-            otherwise nothing.
+        Returns:
+            An optional plug.PlugResult if the syntax is invalid, otherwise
+            nothing.
         """
         errors = _syntax.check_syntax(args.infile.read_text().split("\n"))
         if errors:
-            msg = []
-            for error in errors:
-                msg.append(f"Line {error.line}: {error.msg}\n")
+            file_errors = [_format.FilesWithErrors(args.infile.name, errors)]
+            msg = _format.format_error_string(file_errors)
 
             return plug.Result(
-                name="sanitize-file",
-                msg="".join(msg),
-                status=plug.Status.ERROR,
+                name="sanitize-file", msg=msg, status=plug.Status.ERROR,
             )
 
         result = _sanitize.sanitize_file(args.infile)

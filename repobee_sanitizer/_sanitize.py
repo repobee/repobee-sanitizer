@@ -17,10 +17,12 @@ def sanitize_file(file_abs_path: pathlib.Path) -> Optional[str]:
     the file or give back a sanitized version. File must be syntax checked
     before running this.
 
-    Args: file_abs_path: The absolute file path to the file you wish to
+    Args:
+        file_abs_path: The absolute file path to the file you wish to
         sanitize.
 
-    Returns: We return the sanitized output text, but only if the file was not
+    Returns:
+        We return the sanitized output text, but only if the file was not
         removed.
     """
     text = file_abs_path.read_text()
