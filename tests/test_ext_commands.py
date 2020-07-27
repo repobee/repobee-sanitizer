@@ -69,9 +69,10 @@ class TestSanitizeFile:
 
         result = execute_sanitize_file(f"{file_src_path} {file_src_path}")
 
-        assert result.status == plug.Status.ERROR
         assert (
-            "START block must begin file or follow an END block" in result.msg
+            result.status == plug.Status.ERROR
+            and "START block must begin file or follow an END block"
+            in result.msg
         )
 
 
