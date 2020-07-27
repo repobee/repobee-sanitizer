@@ -59,6 +59,23 @@ class TestSanitizeFile:
 
         assert not file_src_path.is_file()
 
+    def test_invalid_file_return_error_status(
+        self, sanitizer_config, fake_repo
+    ):
+        """Test that sanitize-file returns a PlugResult with status ERROR when
+        file has invalid syntax
+        """
+        file_name = "missing-end-marker.in"
+        file_src_path = fake_repo.path / file_name
+        shutil.copy(testhelpers.get_resource(file_name), file_src_path)
+
+        result = execute_sanitize_file(f"{file_src_path} {file_src_path}")
+
+        assert result.status == plug.Status.ERROR
+        assert (
+            "START block must begin file or follow an END block" in result.msg
+        )
+
 
 class TestSanitizeRepo:
     def test_no_commit(self, sanitizer_config, fake_repo):
