@@ -41,9 +41,7 @@ class SanitizeRepo(plug.Plugin, plug.cli.Command):
     )
 
     repo_root = plug.cli.option(
-        short_name="-r",
-        converter=pathlib.Path,
-        default=pathlib.Path(".").absolute(),
+        short_name="-r", converter=pathlib.Path, default=pathlib.Path("."),
     )
     force = plug.cli.flag(
         help="Ignore warnings for uncommitted files in the repository"
@@ -55,7 +53,8 @@ class SanitizeRepo(plug.Plugin, plug.cli.Command):
     )
 
     def command(self, api) -> Optional[plug.Result]:
-        message = _sanitize_repo.check_repo_state(self.repo_root)
+        repo_root = self.repo_root.absolute()
+        message = _sanitize_repo.check_repo_state(repo_root)
         if message and not self.force:
             return plug.Result(
                 name="sanitize-repo", msg=message, status=plug.Status.ERROR,
@@ -63,14 +62,12 @@ class SanitizeRepo(plug.Plugin, plug.cli.Command):
 
         if self.no_commit:
             LOGGER.info("Executing dry run")
-            file_relpaths = _sanitize_repo.discover_dirty_files(self.repo_root)
-            errors = _sanitize_repo.sanitize_files(
-                self.repo_root, file_relpaths
-            )
+            file_relpaths = _sanitize_repo.discover_dirty_files(repo_root)
+            errors = _sanitize_repo.sanitize_files(repo_root, file_relpaths)
         else:
             LOGGER.info(f"Sanitizing repo and updating {self.target_branch}")
             errors = _sanitize_repo.sanitize_to_target_branch(
-                self.repo_root, self.target_branch
+                repo_root, self.target_branch
             )
 
         if errors:
