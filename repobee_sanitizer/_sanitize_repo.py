@@ -9,6 +9,7 @@ import pathlib
 import argparse
 import shutil
 import tempfile
+import os
 
 from typing import Optional, List
 
@@ -65,7 +66,7 @@ class SanitizeRepo(plug.Plugin):
             help="Path to the worktree root of the repository to sanitize.",
             type=pathlib.Path,
             metavar="path",
-            default=pathlib.Path(".").absolute(),
+            default=pathlib.Path(os.getcwd()).absolute(),
         )
         parser.add_argument(
             "--force",
