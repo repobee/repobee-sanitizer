@@ -2,6 +2,7 @@ import collections
 import pathlib
 import sys
 import shutil
+import os
 
 import pytest
 import git
@@ -99,6 +100,27 @@ class TestSanitizeRepo:
 
         fake_repo.repo.git.checkout(target_branch)
         fake_repo.repo.git.reset("--hard")
+        assert_expected_text_in_files(fake_repo.file_infos)
+
+    def test_target_branch_default_root(self, sanitizer_config, fake_repo):
+        os.chdir(fake_repo.path)
+        target_branch = "student-version"
+        repobee.main(
+            f"repobee --config-file {sanitizer_config} sanitize-repo "
+            f"--target-branch {target_branch}".split()
+        )
+
+        fake_repo.repo.git.checkout(target_branch)
+        fake_repo.repo.git.reset("--hard")
+        assert_expected_text_in_files(fake_repo.file_infos)
+
+    def test_no_commit_default_root(self, sanitizer_config, fake_repo):
+        os.chdir(fake_repo.path)
+        repobee.main(
+            f"repobee --config-file {sanitizer_config} sanitize-repo "
+            f"--no-commit".split()
+        )
+
         assert_expected_text_in_files(fake_repo.file_infos)
 
     def test_target_branch_with_binary_files(

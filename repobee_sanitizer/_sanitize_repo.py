@@ -72,7 +72,7 @@ class SanitizeRepo(plug.Plugin):
             help="Path to the worktree root of the repository to sanitize.",
             type=pathlib.Path,
             metavar="path",
-            default=pathlib.Path("."),
+            default=pathlib.Path(".").absolute(),
         )
         parser.add_argument(
             "--force",
