@@ -11,7 +11,7 @@ from typing import Optional
 
 import repobee_plug as plug
 
-from repobee_sanitizer import _sanitize
+from repobee_sanitizer import _sanitize, _syntax, _format
 
 
 PLUGIN_NAME = "sanitizer"
@@ -25,15 +25,24 @@ class SanitizeFile(plug.Plugin):
         file.
 
         Args:
-            args: Parsed and processed args from the RepoBee CLI.
-            api: A platform API instance.
+            args: Parsed and processed args from the RepoBee CLI. api: A
+            platform API instance.
+
         Returns:
-            A mapping (str -> List[plug.Result]) that RepoBee's CLI can use for
-            output.
+            Result if the syntax is invalid, otherwise nothing.
         """
+        errors = _syntax.check_syntax(args.infile.read_text().split("\n"))
+        if errors:
+            file_errors = [_format.FileWithErrors(args.infile.name, errors)]
+            msg = _format.format_error_string(file_errors)
+
+            return plug.Result(
+                name="sanitize-file", msg=msg, status=plug.Status.ERROR,
+            )
+
         result = _sanitize.sanitize_file(args.infile)
         if result:
-            args.outfile.write_text(result, encoding="utf8")
+            args.outfile.write_text(result)
 
     @plug.repobee_hook
     def create_extension_command(self) -> plug.ExtensionCommand:
