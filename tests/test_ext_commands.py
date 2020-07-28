@@ -36,6 +36,7 @@ class TestSanitizeFile:
         infile = pathlib.Path(tmpdir) / "input.in"
         infile.write_text(inp_text)
         outfile = pathlib.Path(tmpdir) / "output.out"
+        outfile.write_text("This should be replaced")
 
         repobee.main(
             f"repobee --config-file {sanitizer_config} sanitize-file "
@@ -45,20 +46,36 @@ class TestSanitizeFile:
         assert outfile.read_text(encoding="utf8") == out_text
 
     def test_removes_file_with_shred_marker(self, sanitizer_config, fake_repo):
-        """Test that sanitize-repo does not send any files that contain a shred
-        marker to target-branch
-        """
+        """Test that sanitize-file removes a file containing a shred marker."""
         file_name = "valid-shred-marker.in"
-        file_src_path = testhelpers.get_resource(file_name)
-        file_dst_path = fake_repo.path / file_name
-        shutil.copy(file_src_path, file_dst_path)
+        file_src_path = fake_repo.path / file_name
+        shutil.copy(testhelpers.get_resource(file_name), file_src_path)
 
         repobee.main(
             f"repobee --config-file {sanitizer_config} sanitize-file "
-            f"{file_dst_path} {file_dst_path}".split()
+            f"{file_src_path} {file_src_path}".split()
         )
 
-        assert not file_dst_path.is_file()
+        assert not file_src_path.is_file()
+
+    def test_invalid_file_return_error_status(self, fake_repo):
+        """Test that sanitize-file returns a PlugResult with status ERROR when
+        file has invalid syntax
+        """
+        file_name = "missing-end-marker.in"
+        file_src_path = fake_repo.path / file_name
+        shutil.copy(testhelpers.get_resource(file_name), file_src_path)
+
+        fake_repo.repo.git.add(file_src_path)
+        fake_repo.repo.git.commit("-m", "'Initial commit'")
+
+        result = execute_sanitize_file(f"{file_src_path} {file_src_path}")
+
+        assert (
+            result.status == plug.Status.ERROR
+            and "START block must begin file or follow an END block"
+            in result.msg
+        )
 
 
 class TestSanitizeRepo:
@@ -243,6 +260,42 @@ class TestSanitizeRepo:
             == other_file_contents
         )
 
+    def test_target_branch_invalid_file_returns_error_status(self, fake_repo):
+        target_branch = "student-version"
+        file_name = "missing-end-marker.in"
+        file_src_path = fake_repo.path / file_name
+        shutil.copy(testhelpers.get_resource(file_name), file_src_path)
+
+        fake_repo.repo.git.add(file_src_path)
+        fake_repo.repo.git.commit("-m", "'Initial commit'")
+
+        result = execute_sanitize_repo(
+            f"--repo-root {fake_repo.path} --target-branch {target_branch}"
+        )
+
+        assert (
+            result.status == plug.Status.ERROR
+            and "START block must begin file or follow an END block"
+            in result.msg
+        )
+
+    def test_no_commit_invalid_file_return_error_status(self, fake_repo):
+        file_name = "missing-end-marker.in"
+        file_src_path = fake_repo.path / file_name
+        shutil.copy(testhelpers.get_resource(file_name), file_src_path)
+        fake_repo.repo.git.add(file_src_path)
+        fake_repo.repo.git.commit("-m", "'Initial commit'")
+
+        result = execute_sanitize_repo(
+            f"--repo-root {fake_repo.path} --no-commit"
+        )
+
+        assert (
+            result.status == plug.Status.ERROR
+            and "START block must begin file or follow an END block"
+            in result.msg
+        )
+
     def test_returns_fail_when_repo_has_staged_changes(
         self, sanitizer_config, fake_repo
     ):
@@ -368,6 +421,14 @@ def execute_sanitize_repo(arguments: str):
     """Run the sanitize-repo function with the given arguments"""
     sanitize_repo = sanitizer.SanitizeRepo()
     cmd = sanitize_repo.create_extension_command()
+    args = cmd.parser.parse_args(arguments.split())
+    result = cmd.callback(args, None)
+    return result
+
+
+def execute_sanitize_file(arguments: str):
+    sanitize_file = sanitizer.SanitizeFile()
+    cmd = sanitize_file.create_extension_command()
     args = cmd.parser.parse_args(arguments.split())
     result = cmd.callback(args, None)
     return result

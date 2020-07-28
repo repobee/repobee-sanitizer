@@ -14,19 +14,19 @@ from typing import List, Iterable, Optional
 
 def sanitize_file(file_abs_path: pathlib.Path) -> Optional[str]:
     """Runs the sanitization protocol on a given file. This can either remove
-    the file or give back a sanitized version
+    the file or give back a sanitized version. File must be syntax checked
+    before running this.
 
     Args:
-        file_abs_path:
-            The absolute file path to the file you wish to sanitize.
+        file_abs_path: The absolute file path to the file you wish to
+        sanitize.
 
     Returns:
-        We return the sanitized output text, but only if the file
-        was not removed.
+        We return the sanitized output text, but only if the file was not
+        removed.
     """
     text = file_abs_path.read_text()
     lines = text.split("\n")
-    _syntax.check_syntax(lines)
     if _syntax.contained_marker(lines[0]) == Markers.SHRED:
         file_abs_path.unlink()
     else:
