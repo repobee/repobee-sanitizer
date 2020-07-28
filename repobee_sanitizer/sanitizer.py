@@ -117,3 +117,9 @@ class SanitizeFile(plug.Plugin, plug.cli.Command):
         result = _sanitize.sanitize_file(self.infile)
         if result:
             self.outfile.write_text(result)
+
+        return plug.Result(
+            name="sanitize-file",
+            msg="Successfully sanitized file",
+            status=plug.Status.SUCCESS,
+        )
