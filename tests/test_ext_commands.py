@@ -2,11 +2,9 @@ import collections
 import pathlib
 import sys
 import shutil
-import os
 
 import pytest
 import git
-import repobee
 
 import repobee
 from repobee_sanitizer import sanitizer
@@ -89,7 +87,8 @@ class TestSanitizeRepo:
         target_branch = "student-version"
 
         run_repobee(
-            f"sanitize repo --target-branch {target_branch} --repo-root {fake_repo.path}".split()
+            f"sanitize repo --target-branch {target_branch} "
+            f"--repo-root {fake_repo.path}".split()
         )
 
         fake_repo.repo.git.checkout(target_branch)
@@ -111,7 +110,7 @@ class TestSanitizeRepo:
     def test_no_commit_default_root(self, sanitizer_config, fake_repo):
 
         run_repobee(
-            f"sanitize repo --no-commit".split(), workdir=fake_repo.path
+            "sanitize repo --no-commit".split(), workdir=fake_repo.path
         )
 
         assert_expected_text_in_files(fake_repo.file_infos)
@@ -142,7 +141,8 @@ class TestSanitizeRepo:
         # execute test
         target_branch = "student-version"
         run_repobee(
-            f"sanitize repo --target-branch {target_branch} --repo-root {fake_repo.path}".split()
+            f"sanitize repo --target-branch {target_branch} "
+            f"--repo-root {fake_repo.path}".split()
         )
 
         fake_repo.repo.git.checkout(target_branch)
@@ -163,7 +163,8 @@ class TestSanitizeRepo:
 
         target_branch = "student-version"
         run_repobee(
-            f"sanitize repo --target-branch {target_branch} --repo-root {fake_repo.path}".split()
+            f"sanitize repo --target-branch {target_branch} "
+            f"--repo-root {fake_repo.path}".split()
         )
 
         fake_repo.repo.git.checkout(target_branch)
@@ -178,7 +179,8 @@ class TestSanitizeRepo:
         """
         target_branch = "student-version"
         run_repobee(
-            f"sanitize repo --target-branch {target_branch} --repo-root {fake_repo.path}".split()
+            f"sanitize repo --target-branch {target_branch} "
+            f"--repo-root {fake_repo.path}".split()
         )
 
         assert fake_repo.repo.git.diff(fake_repo.repo.head.commit) == ""
@@ -191,7 +193,8 @@ class TestSanitizeRepo:
         """
         target_branch = "student-version"
         run_repobee(
-            f"sanitize repo --target-branch {target_branch} --repo-root {fake_repo.path}".split()
+            f"sanitize repo --target-branch {target_branch} "
+            f"--repo-root {fake_repo.path}".split()
         )
 
         fake_repo.repo.git.checkout(target_branch)
@@ -207,7 +210,8 @@ class TestSanitizeRepo:
         fake_repo.repo.git.branch(target_branch)
 
         run_repobee(
-            f"sanitize repo --target-branch {target_branch} --repo-root {fake_repo.path}".split()
+            f"sanitize repo --target-branch {target_branch} "
+            f"--repo-root {fake_repo.path}".split()
         )
 
         fake_repo.repo.git.checkout(target_branch)
@@ -229,7 +233,8 @@ class TestSanitizeRepo:
         fake_repo.repo.git.commit("-m", "'Add other file'")
 
         run_repobee(
-            f"sanitize repo --target-branch {target_branch} --repo-root {fake_repo.path}".split()
+            f"sanitize repo --target-branch {target_branch} "
+            f"--repo-root {fake_repo.path}".split()
         )
 
         # note that "other_file" is tracked on the current branch, and so if
@@ -250,7 +255,8 @@ class TestSanitizeRepo:
         fake_repo.repo.git.commit("-m", "'Initial commit'")
 
         result = run_repobee(
-            f"sanitize repo --target-branch {target_branch} --repo-root {fake_repo.path}".split()
+            f"sanitize repo --target-branch {target_branch} "
+            f"--repo-root {fake_repo.path}".split()
         )
 
         assert (
@@ -330,7 +336,8 @@ class TestSanitizeRepo:
         target_branch = "student-version"
 
         result = run_repobee(
-            f"sanitize repo --target-branch {target_branch} --repo-root {fake_repo.path}".split()
+            f"sanitize repo --target-branch {target_branch} "
+            f"--repo-root {fake_repo.path}".split()
         )
 
         assert (
@@ -360,7 +367,8 @@ class TestSanitizeRepo:
         target_branch = "student-version"
 
         run_repobee(
-            f"sanitize repo --target-branch {target_branch} --repo-root {fake_repo.path} --force".split()
+            f"sanitize repo --target-branch {target_branch} "
+            f"--repo-root {fake_repo.path} --force".split()
         )
 
         # Assert that working tree has not been modified
@@ -384,7 +392,8 @@ class TestSanitizeRepo:
 
         with pytest.raises(plug.PlugError) as exc_info:
             run_repobee(
-                f"sanitize repo --target-branch {target_branch} --repo-root {fake_repo.path}".split()
+                f"sanitize repo --target-branch {target_branch} "
+                f"--repo-root {fake_repo.path}".split()
             )
 
         assert f"Not a git repository: '{fake_repo.path}'" in str(
