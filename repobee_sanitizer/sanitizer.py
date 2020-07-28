@@ -41,7 +41,7 @@ class SanitizeRepo(plug.Plugin, plug.cli.Command):
     )
 
     repo_root = plug.cli.option(
-        short_name="r",
+        short_name="-r",
         converter=pathlib.Path,
         default=pathlib.Path(".").absolute(),
     )
@@ -87,7 +87,7 @@ class SanitizeRepo(plug.Plugin, plug.cli.Command):
         )
 
 
-class SanitizeFile(plug.Plugin):
+class SanitizeFile(plug.Plugin, plug.cli.Command):
     __settings__ = plug.cli.command_settings(
         help="Sanitize target file",
         description="Sanitizes the target input file and saves the output in "
@@ -95,8 +95,8 @@ class SanitizeFile(plug.Plugin):
         action=sanitize_category.file,
     )
 
-    infile = plug.cli.positional()
-    outfile = plug.cli.positional()
+    infile = plug.cli.positional(converter=pathlib.Path)
+    outfile = plug.cli.positional(converter=pathlib.Path)
 
     def command(self, api) -> Optional[plug.Result]:
         """A callback function that runs the sanitization protocol on a given
