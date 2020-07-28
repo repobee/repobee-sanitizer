@@ -29,12 +29,11 @@ class SanitizeFile(plug.Plugin):
             platform API instance.
 
         Returns:
-            An optional plug.PlugResult if the syntax is invalid, otherwise
-            nothing.
+            Result if the syntax is invalid, otherwise nothing.
         """
         errors = _syntax.check_syntax(args.infile.read_text().split("\n"))
         if errors:
-            file_errors = [_format.FilesWithErrors(args.infile.name, errors)]
+            file_errors = [_format.FileWithErrors(args.infile.name, errors)]
             msg = _format.format_error_string(file_errors)
 
             return plug.Result(

@@ -18,7 +18,7 @@ import testhelpers
 @pytest.mark.parametrize(
     "text", INVALID_TEST_CASE_ARGS, ids=INVALID_TEST_CASE_IDS
 )
-def test_sanitize_invalid(text: [str]):
+def test_sanitize_invalid(text: str):
     assert _syntax.check_syntax(text)
 
 

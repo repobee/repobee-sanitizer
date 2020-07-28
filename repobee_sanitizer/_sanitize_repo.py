@@ -121,18 +121,17 @@ def _discover_dirty_files(
 
 def _sanitize_files(
     basedir: pathlib.Path, file_relpaths: List[_fileutils.RelativePath]
-) -> List[_format.FilesWithErrors]:
+) -> List[_format.FileWithErrors]:
     """Checks the syntax of the provided files and reports any found errors.
     If any errors are found, report errors and exits. If there are no errors,
     then all files are sanitized."""
     files_with_errors = []
 
     for relpath in file_relpaths:
-        file_abspath = basedir / str(relpath)
-
-        errors = _syntax.check_syntax(file_abspath.read_text().split("\n"))
+        text = relpath.read_text_relative_to(basedir)
+        errors = _syntax.check_syntax(text.split("\n"))
         if errors:
-            files_with_errors.append(_format.FilesWithErrors(relpath, errors))
+            files_with_errors.append(_format.FileWithErrors(relpath, errors))
 
     if files_with_errors:
         return files_with_errors
@@ -148,10 +147,12 @@ def _sanitize_files(
         else:
             LOGGER.info(f"Shredded file {relpath}")
 
+    return []
+
 
 def _sanitize_to_target_branch(
     repo_path: pathlib.Path, target_branch: str,
-) -> List[_format.FilesWithErrors]:
+) -> List[_format.FileWithErrors]:
     """Create a commit on the target branch of the specified repo with
     sanitized versions of the provided files, without modifying the
     working tree or HEAD of the repo.

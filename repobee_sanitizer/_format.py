@@ -11,12 +11,12 @@ from typing import List
 
 Error = collections.namedtuple("Error", "line msg")
 
-FilesWithErrors = collections.namedtuple(
+FileWithErrors = collections.namedtuple(
     "FileWithErrors", "file_rel_path errors"
 )
 
 
-def format_error_string(files_with_errors: List[FilesWithErrors]) -> str:
+def format_error_string(files_with_errors: List[FileWithErrors]) -> str:
     """Takes a list of named tuples containing a files name, and a list of
     errors and what lines they are found on. The list is then converted into a
     properly formatted string to be printed on the command line.

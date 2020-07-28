@@ -45,9 +45,7 @@ class TestSanitizeFile:
         assert outfile.read_text(encoding="utf8") == out_text
 
     def test_removes_file_with_shred_marker(self, sanitizer_config, fake_repo):
-        """Test that sanitize-file does not send any files that contain a shred
-        marker to target-branch
-        """
+        """Test that sanitize-file removes a file containing a shred marker."""
         file_name = "valid-shred-marker.in"
         file_src_path = fake_repo.path / file_name
         shutil.copy(testhelpers.get_resource(file_name), file_src_path)
