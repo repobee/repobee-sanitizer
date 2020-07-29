@@ -2,12 +2,11 @@ import collections
 import pathlib
 import sys
 import shutil
-import os
 
 import pytest
 import git
-import repobee
 
+import repobee
 from repobee_sanitizer import sanitizer
 import repobee_plug as plug
 import testhelpers
@@ -38,10 +37,7 @@ class TestSanitizeFile:
         outfile = pathlib.Path(tmpdir) / "output.out"
         outfile.write_text("This should be replaced")
 
-        repobee.main(
-            f"repobee --config-file {sanitizer_config} sanitize-file "
-            f"{infile} {outfile}".split()
-        )
+        run_repobee(f"sanitize file {infile} {outfile}".split())
 
         assert outfile.read_text(encoding="utf8") == out_text
 
@@ -51,10 +47,7 @@ class TestSanitizeFile:
         file_src_path = fake_repo.path / file_name
         shutil.copy(testhelpers.get_resource(file_name), file_src_path)
 
-        repobee.main(
-            f"repobee --config-file {sanitizer_config} sanitize-file "
-            f"{file_src_path} {file_src_path}".split()
-        )
+        run_repobee(f"sanitize file {file_src_path} {file_src_path}".split())
 
         assert not file_src_path.is_file()
 
@@ -69,7 +62,9 @@ class TestSanitizeFile:
         fake_repo.repo.git.add(file_src_path)
         fake_repo.repo.git.commit("-m", "'Initial commit'")
 
-        result = execute_sanitize_file(f"{file_src_path} {file_src_path}")
+        result = run_repobee(
+            f"sanitize file {file_src_path} {file_src_path}".split()
+        )
 
         assert (
             result.status == plug.Status.ERROR
@@ -81,10 +76,8 @@ class TestSanitizeFile:
 class TestSanitizeRepo:
     def test_no_commit(self, sanitizer_config, fake_repo):
         """Test that --no-commit modifies the working tree."""
-        repobee.main(
-            f"repobee --config-file {sanitizer_config} sanitize-repo "
-            "--no-commit "
-            f"--repo-root {fake_repo.path}".split()
+        run_repobee(
+            f"sanitize repo --no-commit --repo-root {fake_repo.path}".split()
         )
 
         assert_expected_text_in_files(fake_repo.file_infos)
@@ -92,9 +85,9 @@ class TestSanitizeRepo:
     def test_target_branch(self, sanitizer_config, fake_repo):
         """Sanitizer should discover all the files that it should sanitize."""
         target_branch = "student-version"
-        repobee.main(
-            f"repobee --config-file {sanitizer_config} sanitize-repo "
-            f"--target-branch {target_branch} "
+
+        run_repobee(
+            f"sanitize repo --target-branch {target_branch} "
             f"--repo-root {fake_repo.path}".split()
         )
 
@@ -103,11 +96,11 @@ class TestSanitizeRepo:
         assert_expected_text_in_files(fake_repo.file_infos)
 
     def test_target_branch_default_root(self, sanitizer_config, fake_repo):
-        os.chdir(fake_repo.path)
         target_branch = "student-version"
-        repobee.main(
-            f"repobee --config-file {sanitizer_config} sanitize-repo "
-            f"--target-branch {target_branch}".split()
+
+        run_repobee(
+            f"sanitize repo --target-branch {target_branch}".split(),
+            workdir=fake_repo.path,
         )
 
         fake_repo.repo.git.checkout(target_branch)
@@ -115,10 +108,9 @@ class TestSanitizeRepo:
         assert_expected_text_in_files(fake_repo.file_infos)
 
     def test_no_commit_default_root(self, sanitizer_config, fake_repo):
-        os.chdir(fake_repo.path)
-        repobee.main(
-            f"repobee --config-file {sanitizer_config} sanitize-repo "
-            f"--no-commit".split()
+
+        run_repobee(
+            "sanitize repo --no-commit".split(), workdir=fake_repo.path
         )
 
         assert_expected_text_in_files(fake_repo.file_infos)
@@ -146,12 +138,10 @@ class TestSanitizeRepo:
                 encoding="binary",
             )
         )
-
         # execute test
         target_branch = "student-version"
-        repobee.main(
-            f"repobee --config-file {sanitizer_config} sanitize-repo "
-            f"--target-branch {target_branch} "
+        run_repobee(
+            f"sanitize repo --target-branch {target_branch} "
             f"--repo-root {fake_repo.path}".split()
         )
 
@@ -172,9 +162,8 @@ class TestSanitizeRepo:
         fake_repo.repo.git.commit("-m", "Add shred file")
 
         target_branch = "student-version"
-        repobee.main(
-            f"repobee --config-file {sanitizer_config} sanitize-repo "
-            f"--target-branch {target_branch} "
+        run_repobee(
+            f"sanitize repo --target-branch {target_branch} "
             f"--repo-root {fake_repo.path}".split()
         )
 
@@ -189,9 +178,8 @@ class TestSanitizeRepo:
         a target branch.
         """
         target_branch = "student-version"
-        repobee.main(
-            f"repobee --config-file {sanitizer_config} sanitize-repo "
-            f"--target-branch {target_branch} "
+        run_repobee(
+            f"sanitize repo --target-branch {target_branch} "
             f"--repo-root {fake_repo.path}".split()
         )
 
@@ -204,9 +192,8 @@ class TestSanitizeRepo:
         branch when the target branch does not exist prior to the commit.
         """
         target_branch = "student-version"
-        repobee.main(
-            f"repobee --config-file {sanitizer_config} sanitize-repo "
-            f"--target-branch {target_branch} "
+        run_repobee(
+            f"sanitize repo --target-branch {target_branch} "
             f"--repo-root {fake_repo.path}".split()
         )
 
@@ -222,9 +209,8 @@ class TestSanitizeRepo:
         target_branch = "student-version"
         fake_repo.repo.git.branch(target_branch)
 
-        repobee.main(
-            f"repobee --config-file {sanitizer_config} sanitize-repo "
-            f"--target-branch {target_branch} "
+        run_repobee(
+            f"sanitize repo --target-branch {target_branch} "
             f"--repo-root {fake_repo.path}".split()
         )
 
@@ -246,9 +232,8 @@ class TestSanitizeRepo:
         fake_repo.repo.git.add(str(other_file))
         fake_repo.repo.git.commit("-m", "'Add other file'")
 
-        repobee.main(
-            f"repobee --config-file {sanitizer_config} sanitize-repo "
-            f"--target-branch {target_branch} "
+        run_repobee(
+            f"sanitize repo --target-branch {target_branch} "
             f"--repo-root {fake_repo.path}".split()
         )
 
@@ -269,8 +254,9 @@ class TestSanitizeRepo:
         fake_repo.repo.git.add(file_src_path)
         fake_repo.repo.git.commit("-m", "'Initial commit'")
 
-        result = execute_sanitize_repo(
-            f"--repo-root {fake_repo.path} --target-branch {target_branch}"
+        result = run_repobee(
+            f"sanitize repo --target-branch {target_branch} "
+            f"--repo-root {fake_repo.path}".split()
         )
 
         assert (
@@ -286,8 +272,8 @@ class TestSanitizeRepo:
         fake_repo.repo.git.add(file_src_path)
         fake_repo.repo.git.commit("-m", "'Initial commit'")
 
-        result = execute_sanitize_repo(
-            f"--repo-root {fake_repo.path} --no-commit"
+        result = run_repobee(
+            f"sanitize repo --no-commit --repo-root {fake_repo.path}".split()
         )
 
         assert (
@@ -303,8 +289,8 @@ class TestSanitizeRepo:
         tracked_file.write_text("this is the new text!")
         fake_repo.repo.git.add(tracked_file)
 
-        result = execute_sanitize_repo(
-            f"--repo-root {fake_repo.path} " "--no-commit"
+        result = run_repobee(
+            f"sanitize repo --no-commit --repo-root {fake_repo.path}".split()
         )
 
         assert (
@@ -318,8 +304,8 @@ class TestSanitizeRepo:
         unstaged_file = fake_repo.file_infos[0].abspath
         unstaged_file.write_text("This is some new text!")
 
-        result = execute_sanitize_repo(
-            f"--repo-root {fake_repo.path} " "--no-commit"
+        result = run_repobee(
+            f"sanitize repo --no-commit --repo-root {fake_repo.path}".split()
         )
 
         assert (
@@ -334,8 +320,8 @@ class TestSanitizeRepo:
         untracked_file = fake_repo.path / "untracked.txt"
         untracked_file.write_text("This is some untracked text")
 
-        result = execute_sanitize_repo(
-            f"--repo-root {fake_repo.path} " "--no-commit"
+        result = run_repobee(
+            f"sanitize repo --no-commit --repo-root {fake_repo.path}".split()
         )
 
         assert (
@@ -349,9 +335,9 @@ class TestSanitizeRepo:
         """
         target_branch = "student-version"
 
-        result = execute_sanitize_repo(
-            f"--repo-root {fake_repo.path} "
-            f"--target-branch {target_branch} "
+        result = run_repobee(
+            f"sanitize repo --target-branch {target_branch} "
+            f"--repo-root {fake_repo.path}".split()
         )
 
         assert (
@@ -380,11 +366,9 @@ class TestSanitizeRepo:
 
         target_branch = "student-version"
 
-        repobee.main(
-            f"repobee --config-file {sanitizer_config} sanitize-repo "
-            f"--repo-root {fake_repo.path} "
-            f"--target-branch {target_branch} "
-            "--force".split()
+        run_repobee(
+            f"sanitize repo --target-branch {target_branch} "
+            f"--repo-root {fake_repo.path} --force".split()
         )
 
         # Assert that working tree has not been modified
@@ -407,9 +391,9 @@ class TestSanitizeRepo:
         shutil.rmtree(git_path, ignore_errors=True)
 
         with pytest.raises(plug.PlugError) as exc_info:
-            execute_sanitize_repo(
-                f"--repo-root {fake_repo.path} "
-                f"--target-branch {target_branch} "
+            run_repobee(
+                f"sanitize repo --target-branch {target_branch} "
+                f"--repo-root {fake_repo.path}".split()
             )
 
         assert f"Not a git repository: '{fake_repo.path}'" in str(
@@ -417,21 +401,13 @@ class TestSanitizeRepo:
         )
 
 
-def execute_sanitize_repo(arguments: str):
-    """Run the sanitize-repo function with the given arguments"""
-    sanitize_repo = sanitizer.SanitizeRepo()
-    cmd = sanitize_repo.create_extension_command()
-    args = cmd.parser.parse_args(arguments.split())
-    result = cmd.callback(args, None)
-    return result
-
-
-def execute_sanitize_file(arguments: str):
-    sanitize_file = sanitizer.SanitizeFile()
-    cmd = sanitize_file.create_extension_command()
-    args = cmd.parser.parse_args(arguments.split())
-    result = cmd.callback(args, None)
-    return result
+def run_repobee(cmd, workdir=pathlib.Path(".")):
+    result = repobee.run(
+        cmd,
+        plugins=[sanitizer.SanitizeFile, sanitizer.SanitizeRepo],
+        workdir=workdir,
+    )
+    return list(result.values())[0][0]
 
 
 @pytest.fixture

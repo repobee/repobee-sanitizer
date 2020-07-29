@@ -1,12 +1,9 @@
-"""Extension command that provides functionality for sanitizing an entire
-repository.
+"""Helper functions for the sanitize repo command
 
 .. module:: _sanitize_repo
-    :synopsis: Extensions command that provides functionality for sanitizing an
-        entire repository.
+    :synopsis: Helper functions for the sanitize repo command
 """
 import pathlib
-import argparse
 import shutil
 import tempfile
 
@@ -23,86 +20,22 @@ PLUGIN_NAME = "sanitizer"
 LOGGER = daiquiri.getLogger(__file__)
 
 
-class SanitizeRepo(plug.Plugin):
-    """Extension command that provides functionality for sanitizing an entire
-    repository.
-    """
+def check_repo_state(repo_root) -> Optional[str]:
+    try:
+        repo = git.Repo(repo_root)
+    except git.InvalidGitRepositoryError as exc:
+        raise plug.PlugError(f"Not a git repository: '{repo_root}'") from exc
 
-    def _sanitize_repo(
-        self, args: argparse.Namespace, api: None,
-    ) -> Optional[plug.Result]:
-        message = _check_repo_state(args.repo_root)
-        if message and not args.force:
-            return plug.Result(
-                name="sanitize-repo", msg=message, status=plug.Status.ERROR,
-            )
-
-        if args.no_commit:
-            LOGGER.info("Executing dry run")
-            file_relpaths = _discover_dirty_files(args.repo_root)
-            errors = _sanitize_files(args.repo_root, file_relpaths)
-        else:
-            LOGGER.info(f"Sanitizing repo and updating {args.target_branch}")
-            errors = _sanitize_to_target_branch(
-                args.repo_root, args.target_branch
-            )
-
-        if errors:
-            return plug.Result(
-                name="sanitize-repo",
-                msg=_format.format_error_string(errors),
-                status=plug.Status.ERROR,
-            )
-
-        return plug.Result(
-            name="sanitize-repo",
-            msg="Successfully sanitized repo",
-            status=plug.Status.SUCCESS,
-        )
-
-    def create_extension_command(self) -> plug.ExtensionCommand:
-        """
-        Returns:
-            The sanitize-repo extension command.
-        """
-        parser = plug.ExtensionParser()
-        parser.add_argument(
-            "-r",
-            "--repo-root",
-            help="Path to the worktree root of the repository to sanitize.",
-            type=pathlib.Path,
-            metavar="path",
-            default=pathlib.Path(".").absolute(),
-        )
-        parser.add_argument(
-            "--force",
-            help="Allow uncommitted and untracked files",
-            action="store_true",
-        )
-
-        mode_mutex_grp = parser.add_mutually_exclusive_group(required=True)
-        mode_mutex_grp.add_argument(
-            "-t",
-            "--target-branch",
-            help="Name of the branch to commit the sanitized files to.",
-            metavar="branch",
-            type=str,
-        )
-        mode_mutex_grp.add_argument(
-            "--no-commit",
-            help="Sanitize the worktree in the repo without committing.",
-            action="store_true",
-        )
-        return plug.ExtensionCommand(
-            parser=parser,
-            name="sanitize-repo",
-            help="Sanitize the current repository.",
-            description="Sanitize the current repository.",
-            callback=self._sanitize_repo,
-        )
+    if repo.head.commit.diff():
+        return "There are uncommitted staged files in the repo"
+    if repo.untracked_files:
+        return "There are untracked files in the repo"
+    if repo.index.diff(None):
+        return "There are uncommitted unstaged files in the repo"
+    return None
 
 
-def _discover_dirty_files(
+def discover_dirty_files(
     repo_root: pathlib.Path,
 ) -> List[_fileutils.RelativePath]:
     """
@@ -119,7 +52,7 @@ def _discover_dirty_files(
     return [sp for sp in relpaths if _syntax.file_is_dirty(sp, repo_root)]
 
 
-def _sanitize_files(
+def sanitize_files(
     basedir: pathlib.Path, file_relpaths: List[_fileutils.RelativePath]
 ) -> List[_format.FileWithErrors]:
     """Checks the syntax of the provided files and reports any found errors.
@@ -150,7 +83,7 @@ def _sanitize_files(
     return []
 
 
-def _sanitize_to_target_branch(
+def sanitize_to_target_branch(
     repo_path: pathlib.Path, target_branch: str,
 ) -> List[_format.FileWithErrors]:
     """Create a commit on the target branch of the specified repo with
@@ -170,8 +103,8 @@ def _sanitize_to_target_branch(
         repo_copy_path = pathlib.Path(tmpdir) / "repo"
         shutil.copytree(src=repo_path, dst=repo_copy_path)
         _clean_repo(repo_copy_path)
-        file_relpaths = _discover_dirty_files(repo_copy_path)
-        errors = _sanitize_files(repo_copy_path, file_relpaths)
+        file_relpaths = discover_dirty_files(repo_copy_path)
+        errors = sanitize_files(repo_copy_path, file_relpaths)
         if errors:
             return errors
         _git_commit_on_branch(repo_copy_path, target_branch)
@@ -192,21 +125,6 @@ def _clean_repo(repo_path: pathlib.Path):
     repo = git.Repo(str(repo_path))
     repo.git.reset("--hard")
     repo.git.clean("-dfx")
-
-
-def _check_repo_state(repo_root) -> Optional[str]:
-    try:
-        repo = git.Repo(repo_root)
-    except git.InvalidGitRepositoryError as exc:
-        raise plug.PlugError(f"Not a git repository: '{repo_root}'") from exc
-
-    if repo.head.commit.diff():
-        return "There are uncommitted staged files in the repo"
-    if repo.untracked_files:
-        return "There are untracked files in the repo"
-    if repo.index.diff(None):
-        return "There are uncommitted unstaged files in the repo"
-    return None
 
 
 def _git_commit_on_branch(repo_root: pathlib.Path, target_branch: str):
