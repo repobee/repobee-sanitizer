@@ -115,7 +115,9 @@ class TestSanitizeRepo:
 
         assert_expected_text_in_files(fake_repo.file_infos)
 
-    def test_target_branch_with_binary_files(self, fake_repo):
+    def test_target_branch_with_binary_files(
+        self, sanitizer_config, fake_repo
+    ):
         """Test sanitize-repo when there are binary files in the repo. This is to
         ensure that the command does not try to decode binary files as text.
         """
@@ -147,9 +149,7 @@ class TestSanitizeRepo:
         fake_repo.repo.git.reset("--hard")
         assert_expected_text_in_files(fake_repo.file_infos)
 
-    def test_target_branch_with_iso8859_file(
-        self, sanitizer_config, fake_repo
-    ):
+    def test_target_branch_with_iso8859_file(self, fake_repo):
         """Test sanitize-repo when there are ISO8859 files in the repo. This is to
         ensure that we can sanitize using ISO8859 without errors.
         """
