@@ -7,7 +7,7 @@ import pytest
 import git
 
 import repobee
-from repobee_sanitizer import sanitizer
+from repobee_sanitizer import sanitizer, _fileutils
 import repobee_plug as plug
 import testhelpers
 
@@ -115,9 +115,7 @@ class TestSanitizeRepo:
 
         assert_expected_text_in_files(fake_repo.file_infos)
 
-    def test_target_branch_with_binary_files(
-        self, sanitizer_config, fake_repo
-    ):
+    def test_target_branch_with_binary_files(self, fake_repo):
         """Test sanitize-repo when there are binary files in the repo. This is to
         ensure that the command does not try to decode binary files as text.
         """
@@ -139,6 +137,41 @@ class TestSanitizeRepo:
             )
         )
         # execute test
+        target_branch = "student-version"
+        run_repobee(
+            f"sanitize repo --target-branch {target_branch} "
+            f"--repo-root {fake_repo.path}".split()
+        )
+
+        fake_repo.repo.git.checkout(target_branch)
+        fake_repo.repo.git.reset("--hard")
+        assert_expected_text_in_files(fake_repo.file_infos)
+
+    def test_target_branch_with_iso8859_file(
+        self, sanitizer_config, fake_repo
+    ):
+        """Test sanitize-repo when there are ISO8859 files in the repo. This is to
+        ensure that we can sanitize using ISO8859 without errors.
+        """
+        file_src_path = testhelpers.get_resource("iso8859-1-encoded-file.txt")
+        file_dst_path = fake_repo.path / file_src_path.name
+        shutil.copy(file_src_path, file_dst_path)
+
+        fake_repo.repo.git.add(file_dst_path)
+        fake_repo.repo.git.commit("-m", "Add ISO8859 file")
+
+        relpath = _fileutils.create_relpath(file_dst_path, fake_repo.path)
+
+        fake_repo.file_infos.append(
+            _FileInfo(
+                original_text=relpath.read_text_relative_to(fake_repo.path),
+                expected_text=relpath.read_text_relative_to(fake_repo.path),
+                abspath=file_dst_path,
+                relpath=relpath.__str__(),
+                encoding=relpath.encoding,
+            )
+        )
+
         target_branch = "student-version"
         run_repobee(
             f"sanitize repo --target-branch {target_branch} "
