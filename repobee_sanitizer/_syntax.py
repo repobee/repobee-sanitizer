@@ -98,6 +98,9 @@ def check_syntax(lines: List[str]) -> List[_format.Error]:
         ) and not line.startswith(prefix):
             _error(f"Missing prefix: {prefix}")
 
+        if marker == Markers.END:
+            prefix = ""
+
     if last != Markers.END:
         errors.append(_format.Error(None, "Final block must be an END block"))
 
