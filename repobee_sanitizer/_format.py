@@ -31,10 +31,10 @@ def format_error_string(files_with_errors: List[FileWithErrors]) -> str:
 
     """
     formated_str = [
-        f"Syntax errors detected in {len(files_with_errors)} file(s):"
+        f"Syntax errors detected in {len(files_with_errors)} file(s):\n"
     ]
     for file in files_with_errors:
-        formated_str.append(f"\n{file.file_rel_path}")
+        formated_str.append(f"\n{file.file_rel_path}\n")
         for error in file.errors:
             linestr = f"Line {error.line}: "
             formated_str.append(
