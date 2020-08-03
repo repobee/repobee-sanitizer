@@ -72,6 +72,18 @@ class TestSanitizeFile:
             in result.msg
         )
 
+    def test_strip_flag(self, fake_repo):
+        """Tests that stripping a file works properly"""
+        file_name = "valid-shred-marker.in"
+        file_src_path = fake_repo.path / file_name
+        shutil.copy(testhelpers.get_resource(file_name), file_src_path)
+
+        run_repobee(
+            f"sanitize file {file_src_path} {file_src_path} --strip".split()
+        )
+
+        assert file_src_path.is_file()
+
 
 class TestSanitizeRepo:
     def test_no_commit(self, sanitizer_config, fake_repo):
