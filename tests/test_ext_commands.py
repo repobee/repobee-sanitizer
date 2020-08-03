@@ -448,7 +448,9 @@ def fake_repo(tmpdir) -> _FakeRepoInfo:
     """Setup a fake repository to sanitize."""
     fake_repo_path = pathlib.Path(tmpdir)
     file_infos = []
-    for raw_case, id_ in zip(*testhelpers.generate_valid_test_cases()):
+    for raw_case, id_ in zip(
+        *testhelpers.generate_valid_test_cases(testhelpers.DIR.VALID)
+    ):
         input_text, expected_output_text = raw_case
         output_path = fake_repo_path / id_
         output_path.parent.mkdir(parents=True)

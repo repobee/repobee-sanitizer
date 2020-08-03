@@ -1,6 +1,7 @@
 """Helper functions for the test suite."""
 
 import pathlib
+import enum
 
 from typing import Iterable, Tuple
 
@@ -10,8 +11,20 @@ OUTPUT_FILENAME = "output.out"
 TEST_CASE_DIR = pathlib.Path(__file__).parent.parent / "test_case_files"
 
 VALID_CASES_BASEDIR = TEST_CASE_DIR / "valid"
+INVERSE_CASES_BASEDIR = TEST_CASE_DIR / "inverse"
+
 INVALID_CASES_BASEDIR = TEST_CASE_DIR / "invalid"
+
 RESOURCES_BASEDIR = pathlib.Path(__file__).parent.parent / "resources"
+
+
+class DIR(enum.Enum):
+    """Used as arguments to define what test case directory to look for files
+    in
+    """
+
+    VALID = VALID_CASES_BASEDIR
+    INVERSE = INVERSE_CASES_BASEDIR
 
 
 def discover_test_cases(
@@ -31,14 +44,15 @@ def discover_test_cases(
     return filter(_is_test_dir, test_case_base.rglob("*"))
 
 
-def generate_valid_test_cases():
-    valid_test_case_dirs = discover_test_cases(VALID_CASES_BASEDIR)
+def generate_valid_test_cases(test_dir: DIR):
+    test_dir_path = pathlib.Path(test_dir.value)
+    valid_test_case_dirs = discover_test_cases(test_dir_path)
     marked_args = [
         (read_valid_test_case_files(case_dir), case_dir)
         for case_dir in valid_test_case_dirs
     ]
     args = [arg for arg, _ in marked_args]
-    ids = [str(id_.relative_to(VALID_CASES_BASEDIR)) for _, id_ in marked_args]
+    ids = [str(id_.relative_to(test_dir_path)) for _, id_ in marked_args]
     return args, ids
 
 

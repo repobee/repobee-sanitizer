@@ -8,7 +8,11 @@ import testhelpers
 (
     VALID_TEST_CASE_ARGS,
     VALID_TEST_CASE_IDS,
-) = testhelpers.generate_valid_test_cases()
+) = testhelpers.generate_valid_test_cases(testhelpers.DIR.VALID)
+(
+    INVERSE_TEST_CASE_ARGS,
+    INVERSE_TEST_CASE_IDS,
+) = testhelpers.generate_valid_test_cases(testhelpers.DIR.INVERSE)
 (
     INVALID_TEST_CASE_ARGS,
     INVALID_TEST_CASE_IDS,
@@ -31,3 +35,13 @@ def test_sanitize_valid(inp: str, expected: str):
     hook.
     """
     assert _sanitize.sanitize_text(inp) == expected
+
+
+@pytest.mark.parametrize(
+    "inp,expected", INVERSE_TEST_CASE_ARGS, ids=INVERSE_TEST_CASE_IDS
+)
+def test_sanitize_inverse(inp: str, expected: str):
+    """Similar to previous functions except we test the function to strip a file
+    of all sanitizer syntax.
+    """
+    assert _sanitize.strip_text(inp) == expected
