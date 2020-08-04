@@ -19,10 +19,10 @@ def sanitize_file(file_abs_path: pathlib.Path) -> Optional[str]:
 
     Args:
         file_abs_path: The absolute file path to the file you wish to
-        sanitize.
+            sanitize.
 
     Returns:
-        We return the sanitized output text, but only if the file was not
+        The sanitized output text, but only if the file was not
         removed.
     """
     text = file_abs_path.read_text()
@@ -40,10 +40,10 @@ def strip_file(file_abs_path: pathlib.Path) -> Optional[str]:
 
     Args:
         file_abs_path: The absolute file path to the file you wish to
-        sanitize.
+            strip.
 
     Returns:
-        We return the stripped output text.
+        The stripped output text.
     """
     text = file_abs_path.read_text()
     lines = text.split("\n")
