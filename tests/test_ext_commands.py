@@ -28,9 +28,9 @@ class TestSanitizeFile:
             / "prefixed"
             / "junit_test_case"
         )
-        inp_text, out_text = testhelpers.read_valid_test_case_files(
-            test_case_dir
-        )
+        data = testhelpers.read_valid_test_case_files(test_case_dir)
+        inp_text = data.inp
+        out_text = data.out
 
         infile = pathlib.Path(tmpdir) / "input.in"
         infile.write_text(inp_text)
@@ -41,15 +41,18 @@ class TestSanitizeFile:
 
         assert outfile.read_text(encoding="utf8") == out_text
 
-    def test_removes_file_with_shred_marker(self, sanitizer_config, fake_repo):
+    def test_does_not_creat_file_with_shred_marker(
+        self, sanitizer_config, fake_repo
+    ):
         """Test that sanitize-file removes a file containing a shred marker."""
         file_name = "valid-shred-marker.in"
         file_src_path = fake_repo.path / file_name
+        file_dst_path = fake_repo.path / "inverse.out"
         shutil.copy(testhelpers.get_resource(file_name), file_src_path)
 
-        run_repobee(f"sanitize file {file_src_path} {file_src_path}".split())
+        run_repobee(f"sanitize file {file_src_path} {file_dst_path}".split())
 
-        assert not file_src_path.is_file()
+        assert not file_dst_path.is_file()
 
     def test_invalid_file_return_error_status(self, fake_repo):
         """Test that sanitize-file returns a PlugResult with status ERROR when
@@ -460,10 +463,9 @@ def fake_repo(tmpdir) -> _FakeRepoInfo:
     """Setup a fake repository to sanitize."""
     fake_repo_path = pathlib.Path(tmpdir)
     file_infos = []
-    for raw_case, id_ in zip(
-        *testhelpers.generate_valid_test_cases(testhelpers.DIR.VALID)
-    ):
-        input_text, expected_output_text = raw_case
+    for raw_case, id_ in zip(*testhelpers.generate_valid_test_cases()):
+        input_text = raw_case.inp
+        expected_output_text = raw_case.out
         output_path = fake_repo_path / id_
         output_path.parent.mkdir(parents=True)
         output_path.write_text(input_text)

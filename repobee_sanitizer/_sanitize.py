@@ -12,7 +12,9 @@ import re
 from typing import List, Iterable, Optional
 
 
-def sanitize_file(file_abs_path: pathlib.Path) -> Optional[str]:
+def sanitize_file(
+    file_abs_path: pathlib.Path, strip: bool = False
+) -> Optional[str]:
     """Runs the sanitization protocol on a given file. This can either remove
     the file or give back a sanitized version. File must be syntax checked
     before running this.
@@ -34,7 +36,7 @@ def sanitize_file(file_abs_path: pathlib.Path) -> Optional[str]:
         return "\n".join(sanitized_string)
 
 
-def sanitize_text(content: str) -> str:
+def sanitize_text(content: str, strip: bool = False) -> str:
     """A function to directly sanitize given content.
 
     Args:
@@ -42,7 +44,7 @@ def sanitize_text(content: str) -> str:
     """
     lines = content.split("\n")
     _syntax.check_syntax(lines)
-    sanitized_string = _sanitize(lines)
+    sanitized_string = _sanitize(lines, strip)
     return "\n".join(sanitized_string)
 
 
@@ -53,7 +55,7 @@ def _sanitize(lines: List[str], strip: bool = False) -> Iterable[str]:
         marker = _syntax.contained_marker(line)
         if marker == Markers.START:
             prefix = re.match(rf"(.*?){Markers.START.value}", line).group(1)
-            prefix_length = len(prefix)
+            prefix_length = len(prefix) if not strip else 0
             keep = strip
         elif marker == Markers.REPLACE:
             keep = not strip

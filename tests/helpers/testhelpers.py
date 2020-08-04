@@ -1,30 +1,23 @@
 """Helper functions for the test suite."""
 
 import pathlib
-import enum
+import collections
 
 from typing import Iterable, Tuple
 
 INPUT_FILENAME = "input.in"
 OUTPUT_FILENAME = "output.out"
+INVERSE_FILENAME = "inverse.out"
 
 TEST_CASE_DIR = pathlib.Path(__file__).parent.parent / "test_case_files"
 
 VALID_CASES_BASEDIR = TEST_CASE_DIR / "valid"
-INVERSE_CASES_BASEDIR = TEST_CASE_DIR / "inverse"
-
 INVALID_CASES_BASEDIR = TEST_CASE_DIR / "invalid"
 
 RESOURCES_BASEDIR = pathlib.Path(__file__).parent.parent / "resources"
 
 
-class DIR(enum.Enum):
-    """Used as arguments to define what test case directory to look for files
-    in
-    """
-
-    VALID = VALID_CASES_BASEDIR
-    INVERSE = INVERSE_CASES_BASEDIR
+TestData = collections.namedtuple("TestData", "inp out inverse".split())
 
 
 def discover_test_cases(
@@ -39,20 +32,23 @@ def discover_test_cases(
             return
 
         children = [f.name for f in d.iterdir()]
-        return INPUT_FILENAME in children and OUTPUT_FILENAME in children
+        return (
+            INPUT_FILENAME in children
+            and OUTPUT_FILENAME in children
+            and INVERSE_FILENAME in children
+        )
 
     return filter(_is_test_dir, test_case_base.rglob("*"))
 
 
-def generate_valid_test_cases(test_dir: DIR):
-    test_dir_path = pathlib.Path(test_dir.value)
-    valid_test_case_dirs = discover_test_cases(test_dir_path)
+def generate_valid_test_cases():
+    valid_test_case_dirs = discover_test_cases(VALID_CASES_BASEDIR)
     marked_args = [
         (read_valid_test_case_files(case_dir), case_dir)
         for case_dir in valid_test_case_dirs
     ]
     args = [arg for arg, _ in marked_args]
-    ids = [str(id_.relative_to(test_dir_path)) for _, id_ in marked_args]
+    ids = [str(id_.relative_to(VALID_CASES_BASEDIR)) for _, id_ in marked_args]
     return args, ids
 
 
@@ -68,7 +64,8 @@ def generate_invalid_test_cases():
 def read_valid_test_case_files(test_case_dir: pathlib.Path) -> Tuple[str, str]:
     inp = (test_case_dir / INPUT_FILENAME).read_text(encoding="utf8")
     out = (test_case_dir / OUTPUT_FILENAME).read_text(encoding="utf8")
-    return inp, out
+    inverse = (test_case_dir / INVERSE_FILENAME).read_text(encoding="utf8")
+    return TestData(inp, out, inverse)
 
 
 def get_test_image_path() -> pathlib.Path:
