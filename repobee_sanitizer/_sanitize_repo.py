@@ -72,13 +72,14 @@ def sanitize_files(
     for relpath in file_relpaths:
         file_abspath = basedir / str(relpath)
         sanitized_text = _sanitize.sanitize_file(file_abspath)
-        if sanitized_text:
+        if sanitized_text is None:
+            file_abspath.unlink()
+            LOGGER.info(f"Shredded file {relpath}")
+        else:
             relpath.write_text_relative_to(
                 data=sanitized_text, basedir=basedir
             )
             LOGGER.info(f"Sanitized {relpath}")
-        else:
-            LOGGER.info(f"Shredded file {relpath}")
 
     return []
 

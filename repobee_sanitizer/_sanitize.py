@@ -28,7 +28,7 @@ def sanitize_file(file_abs_path: pathlib.Path) -> Optional[str]:
     text = file_abs_path.read_text()
     lines = text.split("\n")
     if _syntax.contained_marker(lines[0]) == Markers.SHRED:
-        file_abs_path.unlink()
+        return None
     else:
         sanitized_string = _sanitize(lines, strip=False)
         return "\n".join(sanitized_string)
