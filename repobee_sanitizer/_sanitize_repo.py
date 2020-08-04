@@ -26,13 +26,17 @@ def check_repo_state(repo_root) -> Optional[str]:
     except git.InvalidGitRepositoryError as exc:
         raise plug.PlugError(f"Not a git repository: '{repo_root}'") from exc
 
+    message = ""
+    help_message = "\n\nUse --force to ingore this warning and sanitize anyway"
+
     if repo.head.commit.diff():
-        return "There are uncommitted staged files in the repo"
+        message = "There are uncommitted staged files in the repo"
     if repo.untracked_files:
-        return "There are untracked files in the repo"
+        message = "There are untracked files in the repo"
     if repo.index.diff(None):
-        return "There are uncommitted unstaged files in the repo"
-    return None
+        message = "There are uncommitted unstaged files in the repo"
+
+    return message + help_message if message else None
 
 
 def discover_dirty_files(
