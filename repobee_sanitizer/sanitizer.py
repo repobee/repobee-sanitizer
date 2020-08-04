@@ -114,11 +114,7 @@ class SanitizeFile(plug.Plugin, plug.cli.Command):
                 name="sanitize-file", msg=msg, status=plug.Status.ERROR,
             )
 
-        result = (
-            _sanitize.strip_file(self.infile)
-            if self.strip
-            else _sanitize.sanitize_file(self.infile)
-        )
+        result = _sanitize.sanitize_file(self.infile, strip=self.strip)
         if result:
             self.outfile.write_text(result)
 
