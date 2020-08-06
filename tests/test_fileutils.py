@@ -58,7 +58,7 @@ class TestRelativePath:
         should be ``ISO8859-1``, ``ISO8859-2``, etc).
         """
         basedir = testhelpers.RESOURCES_BASEDIR
-        abspath = testhelpers.get_resource("iso8859-1-encoded-file.txt")
+        abspath = testhelpers.get_resource("iso8859.txt")
         expected_text = (
             "Hello I'm Simon Larsén and this file is encoded in ISO8859-1"
         )

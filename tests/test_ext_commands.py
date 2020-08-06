@@ -168,22 +168,31 @@ class TestSanitizeRepo:
         """Test sanitize-repo when there are ISO8859 files in the repo. This is to
         ensure that we can sanitize using ISO8859 without errors.
         """
-        file_src_path = testhelpers.get_resource("iso8859-1-encoded-file.txt")
-        file_dst_path = fake_repo.path / file_src_path.name
-        shutil.copy(file_src_path, file_dst_path)
+        in_src_path = testhelpers.get_resource("iso8859.txt")
+        in_dst_path = fake_repo.path / in_src_path.name
+        shutil.copy(in_src_path, in_dst_path)
 
-        fake_repo.repo.git.add(file_dst_path)
-        fake_repo.repo.git.commit("-m", "Add ISO8859 file")
+        sanitized_src_path = testhelpers.get_resource("sanitized-iso8859.txt")
+        sanitized_dst_path = fake_repo.path / sanitized_src_path.name
 
-        relpath = _fileutils.create_relpath(file_dst_path, fake_repo.path)
+        fake_repo.repo.git.add(sanitized_dst_path)
+        fake_repo.repo.git.add(in_dst_path)
+        fake_repo.repo.git.commit("-m", "Add ISO8859 files")
+
+        in_rel = _fileutils.create_relpath(in_dst_path, fake_repo.path)
+        sanitzed_rel = _fileutils.create_relpath(
+            sanitized_dst_path, fake_repo.path
+        )
 
         fake_repo.file_infos.append(
             _FileInfo(
-                original_text=relpath.read_text_relative_to(fake_repo.path),
-                expected_text=relpath.read_text_relative_to(fake_repo.path),
-                abspath=file_dst_path,
-                relpath=relpath.__str__(),
-                encoding=relpath.encoding,
+                original_text=in_rel.read_text_relative_to(fake_repo.path),
+                expected_text=sanitzed_rel.read_text_relative_to(
+                    fake_repo.path
+                ),
+                abspath=in_dst_path,
+                relpath=in_rel.__str__(),
+                encoding=in_rel.encoding,
             )
         )
 
