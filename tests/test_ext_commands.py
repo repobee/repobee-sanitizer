@@ -174,6 +174,7 @@ class TestSanitizeRepo:
 
         sanitized_src_path = testhelpers.get_resource("sanitized-iso8859.txt")
         sanitized_dst_path = fake_repo.path / sanitized_src_path.name
+        shutil.copy(sanitized_src_path, sanitized_dst_path)
 
         fake_repo.repo.git.add(sanitized_dst_path)
         fake_repo.repo.git.add(in_dst_path)
