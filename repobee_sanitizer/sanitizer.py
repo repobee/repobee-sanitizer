@@ -94,6 +94,9 @@ class SanitizeFile(plug.Plugin, plug.cli.Command):
 
     infile = plug.cli.positional(converter=pathlib.Path)
     outfile = plug.cli.positional(converter=pathlib.Path)
+    strip = plug.cli.flag(
+        help="Instead of sanitizing, remove all sanitizer syntax from the file"
+    )
 
     def command(self, api) -> Optional[plug.Result]:
         """A callback function that runs the sanitization protocol on a given
@@ -111,7 +114,7 @@ class SanitizeFile(plug.Plugin, plug.cli.Command):
                 name="sanitize-file", msg=msg, status=plug.Status.ERROR,
             )
 
-        result = _sanitize.sanitize_file(self.infile)
+        result = _sanitize.sanitize_file(self.infile, strip=self.strip)
         if result:
             self.outfile.write_text(result)
 
