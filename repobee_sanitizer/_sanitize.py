@@ -5,7 +5,7 @@
 """
 import pathlib
 
-from repobee_sanitizer import _syntax
+from repobee_sanitizer import _syntax, _fileutils
 from repobee_sanitizer._syntax import Markers
 
 import re
@@ -13,7 +13,7 @@ from typing import List, Iterable, Optional
 
 
 def sanitize_file(
-    file_abs_path: pathlib.Path, strip: bool = False
+    relpath: _fileutils.RelativePath, strip: bool = False
 ) -> Optional[str]:
     """Runs the sanitization protocol on a given file. This can either remove
     the file or give back a sanitized version. File must be syntax checked
@@ -27,7 +27,7 @@ def sanitize_file(
         The sanitized output text, but only if the file was not
         removed.
     """
-    text = file_abs_path.read_text()
+    text = relpath.read_text_relative_to(pathlib.Path("."))
     lines = text.split("\n")
     if _syntax.contained_marker(lines[0]) == Markers.SHRED:
         return None
