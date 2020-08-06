@@ -13,7 +13,9 @@ from typing import List, Iterable, Optional
 
 
 def sanitize_file(
-    relpath: _fileutils.RelativePath, strip: bool = False
+    basedir: pathlib.Path,
+    relpath: _fileutils.RelativePath,
+    strip: bool = False,
 ) -> Optional[str]:
     """Runs the sanitization protocol on a given file. This can either remove
     the file or give back a sanitized version. File must be syntax checked
@@ -27,7 +29,7 @@ def sanitize_file(
         The sanitized output text, but only if the file was not
         removed.
     """
-    text = relpath.read_text_relative_to(pathlib.Path("."))
+    text = relpath.read_text_relative_to(basedir)
     lines = text.split("\n")
     if _syntax.contained_marker(lines[0]) == Markers.SHRED:
         return None

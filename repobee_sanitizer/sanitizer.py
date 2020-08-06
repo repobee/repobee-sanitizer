@@ -15,6 +15,7 @@ from repobee_sanitizer import (
     _syntax,
     _format,
     _sanitize_repo,
+    _fileutils,
 )
 
 PLUGIN_NAME = "sanitizer"
@@ -105,7 +106,12 @@ class SanitizeFile(plug.Plugin, plug.cli.Command):
         Returns:
             Result if the syntax is invalid, otherwise nothing.
         """
-        errors = _syntax.check_syntax(self.infile.read_text().split("\n"))
+        relpath = _fileutils.create_relpath(
+            self.infile.absolute(), pathlib.Path(".").absolute()
+        )
+        errors = _syntax.check_syntax(
+            relpath.read_text_relative_to(pathlib.Path(".")).split("\n")
+        )
         if errors:
             file_errors = [_format.FileWithErrors(self.infile.name, errors)]
             msg = _format.format_error_string(file_errors)
@@ -114,7 +120,9 @@ class SanitizeFile(plug.Plugin, plug.cli.Command):
                 name="sanitize-file", msg=msg, status=plug.Status.ERROR,
             )
 
-        result = _sanitize.sanitize_file(self.infile, strip=self.strip)
+        result = _sanitize.sanitize_file(
+            pathlib.Path(".").absolute(), relpath, strip=self.strip
+        )
         if result:
             self.outfile.write_text(result)
 

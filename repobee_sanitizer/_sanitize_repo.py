@@ -75,7 +75,7 @@ def sanitize_files(
 
     for relpath in file_relpaths:
         file_abspath = basedir / str(relpath)
-        sanitized_text = _sanitize.sanitize_file(file_abspath)
+        sanitized_text = _sanitize.sanitize_file(basedir, relpath)
         if sanitized_text is None:
             file_abspath.unlink()
             LOGGER.info(f"Shredded file {relpath}")
