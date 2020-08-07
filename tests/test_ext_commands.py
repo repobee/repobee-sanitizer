@@ -2,7 +2,6 @@ import collections
 import pathlib
 import sys
 import shutil
-import os
 
 import pytest
 import git
@@ -38,7 +37,6 @@ class TestSanitizeFile:
         outfile = pathlib.Path(tmpdir) / "output.out"
         outfile.write_text("This should be replaced")
 
-        os.chdir(tmpdir)
         run_repobee(f"sanitize file {infile} {outfile}".split())
 
         assert outfile.read_text(encoding="utf8") == out_text
@@ -52,7 +50,6 @@ class TestSanitizeFile:
         file_dst_path = fake_repo.path / "inverse.out"
         shutil.copy(testhelpers.get_resource(file_name), file_src_path)
 
-        os.chdir(fake_repo.path)
         run_repobee(f"sanitize file {file_src_path} {file_dst_path}".split())
 
         assert not file_dst_path.is_file()
@@ -68,7 +65,6 @@ class TestSanitizeFile:
         fake_repo.repo.git.add(file_src_path)
         fake_repo.repo.git.commit("-m", "'Initial commit'")
 
-        os.chdir(fake_repo.path)
         result = run_repobee(
             f"sanitize file {file_src_path} {file_src_path}".split()
         )
@@ -85,7 +81,6 @@ class TestSanitizeFile:
         file_src_path = fake_repo.path / file_name
         shutil.copy(testhelpers.get_resource(file_name), file_src_path)
 
-        os.chdir(fake_repo.path)
         run_repobee(
             f"sanitize file {file_src_path} {file_src_path} --strip".split()
         )

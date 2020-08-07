@@ -106,12 +106,13 @@ class SanitizeFile(plug.Plugin, plug.cli.Command):
         Returns:
             Result if the syntax is invalid, otherwise nothing.
         """
-        relpath = _fileutils.create_relpath(
-            self.infile.absolute(), pathlib.Path(".").absolute()
+
+        infile_encoding = _fileutils.guess_encoding(self.infile)
+        infile_content = self.infile.read_text(encoding=infile_encoding).split(
+            "\n"
         )
-        errors = _syntax.check_syntax(
-            relpath.read_text_relative_to(pathlib.Path(".")).split("\n")
-        )
+
+        errors = _syntax.check_syntax(infile_content)
         if errors:
             file_errors = [_format.FileWithErrors(self.infile.name, errors)]
             msg = _format.format_error_string(file_errors)
@@ -120,11 +121,9 @@ class SanitizeFile(plug.Plugin, plug.cli.Command):
                 name="sanitize-file", msg=msg, status=plug.Status.ERROR,
             )
 
-        result = _sanitize.sanitize_file(
-            pathlib.Path(".").absolute(), relpath, strip=self.strip
-        )
+        result = _sanitize.sanitize_text(infile_content, strip=self.strip)
         if result:
-            self.outfile.write_text(result)
+            self.outfile.write_text(result, encoding=infile_encoding)
 
         return plug.Result(
             name="sanitize-file",

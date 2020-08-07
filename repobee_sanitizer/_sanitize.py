@@ -23,29 +23,29 @@ def sanitize_file(
 
     Args:
         file_abs_path: The absolute file path to the file you wish to
-            sanitize.
+            sanitize
 
     Returns:
         The sanitized output text, but only if the file was not
-        removed.
+            removed
     """
     text = relpath.read_text_relative_to(basedir)
     lines = text.split("\n")
     if _syntax.contained_marker(lines[0]) == Markers.SHRED:
         return None
-    else:
-        sanitized_string = _sanitize(lines, strip=False)
-        return "\n".join(sanitized_string)
+    sanitized_string = _sanitize(lines, strip)
+    return "\n".join(sanitized_string)
 
 
-def sanitize_text(content: str, strip: bool = False) -> str:
-    """A function to directly sanitize given content.
+def sanitize_text(lines: List[str], strip: bool = False) -> Optional[str]:
+    """A function to directly sanitize given content. Text must be syntax
+    checked first.
 
     Args:
-        Content to be sanitized.
+        Content to be sanitized
     """
-    lines = content.split("\n")
-    _syntax.check_syntax(lines)
+    if _syntax.contained_marker(lines[0]) == Markers.SHRED:
+        return None
     sanitized_string = _sanitize(lines, strip)
     return "\n".join(sanitized_string)
 
