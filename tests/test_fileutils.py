@@ -4,8 +4,6 @@ import tempfile
 
 from repobee_sanitizer import _fileutils
 
-import testhelpers
-
 
 class TestCreateRelativePath:
     """Tests for the create_smart_relpath function."""
@@ -47,22 +45,3 @@ class TestCreateRelativePath:
         assert f"'{abspath}' does not start with '{basedir}'" in str(
             exc_info.value
         )
-
-
-class TestRelativePath:
-    """Tests for the RelativePath class."""
-
-    def test_read_iso8859_1_encoded_file(self):
-        """Currently, guessing ISO8859 encodings with the file command often
-        only gives ``ISO8859``, which is not a complete encoding (i.e. it
-        should be ``ISO8859-1``, ``ISO8859-2``, etc).
-        """
-        basedir = testhelpers.RESOURCES_BASEDIR
-        abspath = testhelpers.get_resource("iso8859-1-encoded-file.txt")
-        expected_text = (
-            "Hello I'm Simon Larsén and this file is encoded in ISO8859-1"
-        )
-
-        relpath = _fileutils.create_relpath(abspath=abspath, basedir=basedir)
-
-        assert relpath.read_text_relative_to(basedir).strip() == expected_text
