@@ -74,10 +74,10 @@ def sanitize_files(
         return files_with_errors
 
     for relpath in file_relpaths:
-        file_abspath = basedir / str(relpath)
-        sanitized_text = _sanitize.sanitize_file(basedir, relpath)
+        content = relpath.read_text_relative_to(basedir).split("\n")
+        sanitized_text = _sanitize.sanitize_text(content)
         if sanitized_text is None:
-            file_abspath.unlink()
+            (basedir / str(relpath)).unlink()
             LOGGER.info(f"Shredded file {relpath}")
         else:
             relpath.write_text_relative_to(
