@@ -224,7 +224,7 @@ class TestSanitizeRepo:
                 f"sanitize repo --target-branch master "
                 f"--repo-root {fake_repo.path}".split()
             )
-            assert exc_info.msg == "No changes will be made to target branch"
+            assert "No changes will be made to target branch" in exc_info.msg
 
     def test_removes_file_with_shred_marker(self, sanitizer_config, fake_repo):
         """Test that sanitize-repo does not send any files that contain a shred
