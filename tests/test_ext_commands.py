@@ -219,11 +219,12 @@ class TestSanitizeRepo:
             f"--repo-root {fake_repo.path}".split()
         )
 
-        with pytest.raises(git.GitCommandError):
+        with pytest.raises(plug.PlugError) as exc_info:
             run_repobee(
                 f"sanitize repo --target-branch master "
                 f"--repo-root {fake_repo.path}".split()
             )
+            assert exc_info.msg == "No changes will be made to target branch"
 
     def test_removes_file_with_shred_marker(self, sanitizer_config, fake_repo):
         """Test that sanitize-repo does not send any files that contain a shred
