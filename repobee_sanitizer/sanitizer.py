@@ -71,6 +71,8 @@ class SanitizeRepo(plug.Plugin, plug.cli.Command):
             if self.ignore_list
             else []
         )
+        if _syntax.Markers.SHRED.value in ignore_list:
+            ignore_list = ignore_list[1:]
         ignored_files_not_found = [
             name
             for name in ignore_list
