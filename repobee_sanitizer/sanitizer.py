@@ -100,7 +100,7 @@ class SanitizeRepo(plug.Plugin, plug.cli.Command):
 
         return plug.Result(
             name="sanitize-repo",
-            msg="Successfully sanitized repo",
+            msg=_format.format_success_string(ignore_list),
             status=plug.Status.SUCCESS,
         )
 
