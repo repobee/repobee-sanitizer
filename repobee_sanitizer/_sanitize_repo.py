@@ -44,7 +44,7 @@ def check_repo_state(repo_root) -> Optional[str]:
 
 
 def discover_dirty_files(
-    repo_root: pathlib.Path,
+    repo_root: pathlib.Path, ignore_list: [str],
 ) -> List[_fileutils.RelativePath]:
     """
     Returns:
@@ -56,6 +56,7 @@ def discover_dirty_files(
         for path in repo_root.rglob("*")
         if path.is_file()
         and path.relative_to(repo_root).parts[0] != git_dir_relpath
+        and path.name not in ignore_list
     )
     return [sp for sp in relpaths if _syntax.file_is_dirty(sp, repo_root)]
 
@@ -93,7 +94,7 @@ def sanitize_files(
 
 
 def sanitize_to_target_branch(
-    repo_path: pathlib.Path, target_branch: str,
+    repo_path: pathlib.Path, target_branch: str, ignore_list: [str],
 ) -> List[_format.FileWithErrors]:
     """Create a commit on the target branch of the specified repo with
     sanitized versions of the provided files, without modifying the
@@ -112,7 +113,7 @@ def sanitize_to_target_branch(
         repo_copy_path = pathlib.Path(tmpdir) / "repo"
         shutil.copytree(src=repo_path, dst=repo_copy_path)
         _clean_repo(repo_copy_path)
-        file_relpaths = discover_dirty_files(repo_copy_path)
+        file_relpaths = discover_dirty_files(repo_copy_path, ignore_list)
         errors = sanitize_files(repo_copy_path, file_relpaths)
         if errors:
             return errors

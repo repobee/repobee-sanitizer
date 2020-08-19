@@ -52,6 +52,10 @@ class SanitizeRepo(plug.Plugin, plug.cli.Command):
         target_branch=plug.cli.option(),
         __required__=True,
     )
+    ignore_list = plug.cli.option(
+        help="path to utf8 encoded file containing name of files to ignore",
+        converter=pathlib.Path,
+    )
 
     def command(self, api) -> Optional[plug.Result]:
         repo_root = self.repo_root.absolute()
@@ -61,15 +65,23 @@ class SanitizeRepo(plug.Plugin, plug.cli.Command):
                 name="sanitize-repo", msg=message, status=plug.Status.ERROR,
             )
 
+        ignore_list = (
+            self.ignore_list.absolute().read_text().split("\n")
+            if self.ignore_list
+            else []
+        )
+
         if self.no_commit:
             LOGGER.info("Executing dry run")
-            file_relpaths = _sanitize_repo.discover_dirty_files(repo_root)
+            file_relpaths = _sanitize_repo.discover_dirty_files(
+                repo_root, ignore_list
+            )
             errors = _sanitize_repo.sanitize_files(repo_root, file_relpaths)
         else:
             LOGGER.info(f"Sanitizing repo and updating {self.target_branch}")
             try:
                 errors = _sanitize_repo.sanitize_to_target_branch(
-                    repo_root, self.target_branch
+                    repo_root, self.target_branch, ignore_list,
                 )
             except _sanitize_repo.EmptyCommitError:
                 return plug.Result(
