@@ -56,7 +56,7 @@ def discover_dirty_files(
         for path in repo_root.rglob("*")
         if path.is_file()
         and path.relative_to(repo_root).parts[0] != git_dir_relpath
-        and path.name not in ignore_list
+        and str(path.relative_to(repo_root)) not in ignore_list
     )
     return [sp for sp in relpaths if _syntax.file_is_dirty(sp, repo_root)]
 

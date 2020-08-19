@@ -486,7 +486,8 @@ class TestSanitizeRepo:
         target_branch = "student-version"
 
         ignore_list_path = testhelpers.get_resource("ignore-list.txt")
-        ignored_file = fake_repo.path / "ignore.txt"
+        ignored_file = fake_repo.path / "subdir" / "ignore.txt"
+        ignored_file.parent.mkdir(parents=True, exist_ok=True)
         ignored_file_text = testhelpers.get_resource(
             "ignore-file.in"
         ).read_text()
@@ -500,7 +501,7 @@ class TestSanitizeRepo:
                 original_text=ignored_file_text,
                 expected_text=ignored_file_text,
                 abspath=ignored_file,
-                relpath="ignore.txt",
+                relpath=pathlib.Path("subdir/ignore.txt"),
                 encoding="utf8",
             )
         )
