@@ -477,6 +477,39 @@ class TestSanitizeRepo:
             exc_info.value
         )
 
+    def test_ignore_list_command(self, fake_repo):
+        """Test to make sure that a file whose name in in the file given by the
+        --ignore-list command. Also checks that a name of a file that is not
+        found does not crash the program.
+        """
+        target_branch = "student-version"
+
+        ignore_list_path = testhelpers.get_resource("ignore-list.txt")
+        ignored_file = fake_repo.path / "ignore.txt"
+        ignored_file_text = testhelpers.get_resource(
+            "ignore-file.in"
+        ).read_text()
+        ignored_file.write_text(ignored_file_text)
+
+        fake_repo.file_infos.append(
+            _FileInfo(
+                original_text=ignored_file_text,
+                expected_text=ignored_file_text,
+                abspath=ignored_file,
+                relpath="ignore.txt",
+                encoding="utf8",
+            )
+        )
+
+        run_repobee(
+            f"sanitize repo --target-branch {target_branch} "
+            f"--repo-root {fake_repo.path} "
+            f"--ignore-list {ignore_list_path}".split()
+        )
+
+        fake_repo.repo.git.checkout(target_branch)
+        assert_expected_text_in_files(fake_repo.file_infos)
+
 
 def run_repobee(cmd, workdir=pathlib.Path(".")):
     result = repobee.run(
