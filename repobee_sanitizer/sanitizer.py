@@ -67,9 +67,17 @@ class SanitizeRepo(plug.Plugin, plug.cli.Command):
             errors = _sanitize_repo.sanitize_files(repo_root, file_relpaths)
         else:
             LOGGER.info(f"Sanitizing repo and updating {self.target_branch}")
-            errors = _sanitize_repo.sanitize_to_target_branch(
-                repo_root, self.target_branch
-            )
+            try:
+                errors = _sanitize_repo.sanitize_to_target_branch(
+                    repo_root, self.target_branch
+                )
+            except _sanitize_repo.EmptyCommitError:
+                return plug.Result(
+                    name="sanitize-repo",
+                    msg="No diff between target branch and sanitized output. "
+                    f"No changes will be made to branch: {self.target_branch}",
+                    status=plug.Status.WARNING,
+                )
 
         if errors:
             return plug.Result(

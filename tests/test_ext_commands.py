@@ -207,6 +207,25 @@ class TestSanitizeRepo:
         fake_repo.repo.git.reset("--hard")
         assert_expected_text_in_files(fake_repo.file_infos)
 
+    def test_throws_error_when_zero_diff_on_target_branch(
+        self, sanitizer_config, fake_repo
+    ):
+        """Test that repobee raises a GitCommandError when we try to sanitize
+        to a branch when there are going to be no changes. To do this, all we
+        have to do is run sanitize twice on the same branch.
+        """
+        run_repobee(
+            f"sanitize repo --target-branch master "
+            f"--repo-root {fake_repo.path}".split()
+        )
+
+        error = run_repobee(
+            f"sanitize repo --target-branch master "
+            f"--repo-root {fake_repo.path}".split()
+        )
+
+        assert "No changes will be made to branch: master" in error.msg
+
     def test_removes_file_with_shred_marker(self, sanitizer_config, fake_repo):
         """Test that sanitize-repo does not send any files that contain a shred
         marker to target-branch

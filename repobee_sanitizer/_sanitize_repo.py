@@ -20,6 +20,10 @@ PLUGIN_NAME = "sanitizer"
 LOGGER = daiquiri.getLogger(__file__)
 
 
+class EmptyCommitError(plug.PlugError):
+    pass
+
+
 def check_repo_state(repo_root) -> Optional[str]:
     try:
         repo = git.Repo(repo_root)
@@ -136,7 +140,11 @@ def _git_commit_on_branch(repo_root: pathlib.Path, target_branch: str):
     repo = git.Repo(str(repo_root))
     repo.git.symbolic_ref("HEAD", f"refs/heads/{target_branch}")
     repo.git.add(".", "--force")
-    repo.git.commit("-m", "'Sanitize files'")
+    try:
+        repo.git.commit("-m", "'Sanitize files'")
+    except git.GitCommandError as exc:
+        assert "nothing to commit, working tree clean" in str(exc)
+        raise EmptyCommitError() from exc
 
 
 def _git_fetch(
