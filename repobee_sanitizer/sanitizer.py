@@ -53,7 +53,8 @@ class SanitizeRepo(plug.Plugin, plug.cli.Command):
         __required__=True,
     )
     ignore_list = plug.cli.option(
-        help="path to utf8 encoded file containing name of files to ignore",
+        help="path to utf8 encoded file containing name of files to NOT "
+        "sanitize",
         converter=pathlib.Path,
     )
 
@@ -70,6 +71,15 @@ class SanitizeRepo(plug.Plugin, plug.cli.Command):
             if self.ignore_list
             else []
         )
+        ignored_files_not_found = [
+            name
+            for name in ignore_list
+            if name
+            not in [
+                str(file.relative_to(repo_root))
+                for file in repo_root.rglob("*")
+            ]
+        ]
 
         if self.no_commit:
             LOGGER.info("Executing dry run")
@@ -100,7 +110,9 @@ class SanitizeRepo(plug.Plugin, plug.cli.Command):
 
         return plug.Result(
             name="sanitize-repo",
-            msg=_format.format_success_string(ignore_list),
+            msg=_format.format_success_string(
+                ignore_list, ignored_files_not_found
+            ),
             status=plug.Status.SUCCESS,
         )
 

@@ -44,7 +44,7 @@ def format_error_string(files_with_errors: List[FileWithErrors]) -> str:
     return "".join(formated_str)
 
 
-def format_success_string(ignore_list: [str]) -> str:
+def format_success_string(ignore_list: [str], files_not_found: [str]) -> str:
     """Return a message stating that sanitization was successfull. If given a
     list of files that were ignored during sanitization, the message will
     state which these were.
@@ -59,11 +59,21 @@ def format_success_string(ignore_list: [str]) -> str:
 
     formated_str = ["Successfully sanitized repo"]
 
-    if ignore_list:
+    found_files = [file for file in ignore_list if file not in files_not_found]
+    if found_files:
         formated_str.append(
-            f"\n\nIgnore-list specified, ignored {len(ignore_list)} files:\n"
+            f"\n\nIgnore-list specified, ignored {len(list(found_files))} "
+            "file(s):\n"
         )
-    for file in ignore_list:
-        formated_str.append(f"\n\t{file}")
+        for file in found_files:
+            formated_str.append(f"\n\t{file}")
+
+    if files_not_found:
+        formated_str.append(
+            f"\n\nCould not find {len(list(files_not_found))} specified "
+            "file(s):\n"
+        )
+        for file in files_not_found:
+            formated_str.append(f"\n\t{file}")
 
     return "".join(formated_str)
