@@ -143,8 +143,8 @@ def _git_commit_on_branch(repo_root: pathlib.Path, target_branch: str):
     try:
         repo.git.commit("-m", "'Sanitize files'")
     except git.GitCommandError as exc:
-        if "nothing to commit, working tree clean" in exc.__str__():
-            raise EmptyCommitError()
+        assert "nothing to commit, working tree clean" in str(exc)
+        raise EmptyCommitError() from exc
 
 
 def _git_fetch(
