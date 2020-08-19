@@ -480,7 +480,8 @@ class TestSanitizeRepo:
     def test_ignore_list_command(self, fake_repo):
         """Test to make sure that a file whose name in in the file given by the
         --ignore-list command. Also checks that a name of a file that is not
-        found does not crash the program.
+        found does not crash the program. Also checks that no other files
+        are modifed by using the asser_expected_text_in_files function.
         """
         target_branch = "student-version"
 
