@@ -482,10 +482,16 @@ class TestSanitizeRepo:
         --ignore-list command. Also checks that a name of a file that is not
         found does not crash the program. Also checks that no other files
         are modifed by using the asser_expected_text_in_files function.
+        ALSO checks that the ignore file-list is removed from target branch
+        when it is inside the repo.
         """
         target_branch = "student-version"
 
-        ignore_list_path = testhelpers.get_resource("ignore-list.txt")
+        ignore_list_path = fake_repo.path / "ignore-list.txt"
+        ignore_list_path.write_text(
+            testhelpers.get_resource("ignore-list.txt").read_text()
+        )
+
         ignored_file = fake_repo.path / "subdir" / "ignore.txt"
         ignored_file.parent.mkdir(parents=True, exist_ok=True)
         ignored_file_text = testhelpers.get_resource(
@@ -494,6 +500,7 @@ class TestSanitizeRepo:
         ignored_file.write_text(ignored_file_text)
 
         fake_repo.repo.git.add(ignored_file)
+        fake_repo.repo.git.add(ignore_list_path)
         fake_repo.repo.git.commit("-m", "'Add file to ignore'")
 
         fake_repo.file_infos.append(
@@ -513,6 +520,7 @@ class TestSanitizeRepo:
         )
 
         fake_repo.repo.git.checkout(target_branch)
+        assert not ignore_list_path.is_file()
         assert_expected_text_in_files(fake_repo.file_infos)
 
 

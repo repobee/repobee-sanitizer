@@ -1,2 +1,3 @@
+REPOBEE-SANITIZER-SHRED
 subdir/ignore.txt
 dont-ignore.txt
