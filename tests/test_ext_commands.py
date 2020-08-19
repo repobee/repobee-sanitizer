@@ -491,6 +491,9 @@ class TestSanitizeRepo:
         ).read_text()
         ignored_file.write_text(ignored_file_text)
 
+        fake_repo.repo.git.add(ignored_file)
+        fake_repo.repo.git.commit("-m", "'Add file to ignore'")
+
         fake_repo.file_infos.append(
             _FileInfo(
                 original_text=ignored_file_text,
