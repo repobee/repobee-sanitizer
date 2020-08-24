@@ -53,7 +53,7 @@ class SanitizeRepo(plug.Plugin, plug.cli.Command):
         __required__=True,
     )
 
-    def command(self, api) -> Optional[plug.Result]:
+    def command(self) -> Optional[plug.Result]:
         repo_root = self.repo_root.absolute()
         message = _sanitize_repo.check_repo_state(repo_root)
         if message and not self.force:
@@ -107,7 +107,7 @@ class SanitizeFile(plug.Plugin, plug.cli.Command):
         help="Instead of sanitizing, remove all sanitizer syntax from the file"
     )
 
-    def command(self, api) -> Optional[plug.Result]:
+    def command(self) -> Optional[plug.Result]:
         """A callback function that runs the sanitization protocol on a given
         file.
 
