@@ -42,7 +42,9 @@ class SanitizeRepo(plug.Plugin, plug.cli.Command):
     )
 
     repo_root = plug.cli.option(
-        short_name="-r", converter=pathlib.Path, default=pathlib.Path("."),
+        short_name="-r",
+        converter=pathlib.Path,
+        default=pathlib.Path("."),
     )
     force = plug.cli.flag(
         help="Ignore warnings for uncommitted files in the repository"
@@ -58,7 +60,9 @@ class SanitizeRepo(plug.Plugin, plug.cli.Command):
         message = _sanitize_repo.check_repo_state(repo_root)
         if message and not self.force:
             return plug.Result(
-                name="sanitize-repo", msg=message, status=plug.Status.ERROR,
+                name="sanitize-repo",
+                msg=message,
+                status=plug.Status.ERROR,
             )
 
         if self.no_commit:
@@ -126,7 +130,9 @@ class SanitizeFile(plug.Plugin, plug.cli.Command):
             msg = _format.format_error_string(file_errors)
 
             return plug.Result(
-                name="sanitize-file", msg=msg, status=plug.Status.ERROR,
+                name="sanitize-file",
+                msg=msg,
+                status=plug.Status.ERROR,
             )
 
         result = _sanitize.sanitize_text(infile_content, strip=self.strip)

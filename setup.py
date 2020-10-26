@@ -5,13 +5,17 @@ with open("README.md", mode="r", encoding="utf-8") as f:
     readme = f.read()
 
 # parse the version instead of importing it to avoid dependency-related crashes
-with open("repobee_sanitizer/__version.py", mode="r", encoding="utf-8",) as f:
+with open(
+    "repobee_sanitizer/__version.py",
+    mode="r",
+    encoding="utf-8",
+) as f:
     line = f.readline()
     __version__ = line.split("=")[1].strip(" '\"\n")
     assert re.match(r"^\d+(\.\d+){2}(-(alpha|beta|rc)(\.\d+)?)?$", __version__)
 
 test_requirements = ["pytest", "repobee", "pytest-cov"]
-required = ["repobee>=3.0.0-beta.1", "gitpython"]
+required = ["repobee>=3.0.0", "gitpython"]
 
 setup(
     name="repobee-sanitizer",

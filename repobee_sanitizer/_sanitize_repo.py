@@ -93,7 +93,8 @@ def sanitize_files(
 
 
 def sanitize_to_target_branch(
-    repo_path: pathlib.Path, target_branch: str,
+    repo_path: pathlib.Path,
+    target_branch: str,
 ) -> List[_format.FileWithErrors]:
     """Create a commit on the target branch of the specified repo with
     sanitized versions of the provided files, without modifying the
