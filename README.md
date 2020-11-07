@@ -162,9 +162,9 @@ similar preceding our markers. **This means code can still compile!**
     prefixes
 * Code between replace and end markers **MUST** also be prefixed
 
-## Markup syntax
+## Syntax
 
-for `repobee-sanitizer` to work, markup syntax must be correct, this includes
+for `repobee-sanitizer` to work, marker syntax must be correct, this includes
 spelling of the markers themselves, the markers currently are as follows:
 
 - REPOBEE-SANITIZER-START
