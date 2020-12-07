@@ -14,7 +14,45 @@ currently) respectively.  `repobee-sanitizer` can remove or replace text by
 going through files, looking for certain `REPOBEE-SANITIZER-<type>`
 text-markers. The most simple usage consists of a `REPOBEE-SANITIZER-START` and
 a `REPOBEE-SANITIZER-END` marker, where content between these two markers will
-be removes, or "santitized".
+be removes, or "santitized" as it were.
+
+## Install
+Use RepoBee's plugin manager to install! 
+
+First, make sure that you have the latest version of `Repobee` installed,
+instructions can be found on the [Repobee website](https://repobee.org/).
+
+To install `repobee-sanitizer`, simply run the command `repobee plugin install` in your terminal, and this will open up a bullet-list where you can select sanitizer. 
+
+> If `repobee-sanitizer` does not show up when running the `sanitize` command. Run `repobee plugin list`, this will present a list with all the availiable plugins. If you cannot find `repobee-sanitizer` in the list, try updating `repobee` using repobee `repobee manage upgrade`.
+
+## Commands
+`repobee-sanitizer` supports two main commands:
+
+### File
+
+`repobee sanitize file <infile> <outfile>` performs the sanitization operation described below directly on a file `infile` and writes the output to `outfile` 
+
+The `--strip` flag can also be used to reverse the operation, instead removing all sanitizer syntax from the file.
+
+### Repo
+
+#### Repo root
+`repobee sanitize repo` performs the sanitization protocol on an entire repository. The directory you want to sanitize is either specified as the working directory `./` or it can be specified using the `--repo-root <path>` option.
+
+#### Branches
+Another important feature is working with branches, `repobee-sanitizer` was essentially made to manage differing branches. For an example, a repo can have a `solutions` and a `main` branch, where the `solutions` branch contains an entire solution to an assignment, as well as `sanitizer` `markers` (specified below), when we then sanitize the `solutions` branch, this creates a slimmed-down version of our repo (that we would send to students), what we can then do is to specify which branch we want the sanitied version to end up on.
+
+This is done using the `--target-branch <branch-name>` option. For example, if our repo is checked out to the branch `solutions` (that contains full solutions and `sanitizer` `markers`), Running:
+
+`repobee sanitize repo --target-branch main` 
+
+will sanitize the currently checked out branch (in this case `solutions`) and commit the result to the specified `main` branch. Successfully using the `--target-branch` feature allows us to retain two concurrent repositories while only having to update one of them should any changed or improvements be made to our course tasks.
+
+#### Errors / Force
+`repobee-sanitizer` does its best to ensure that nothing breaks while sanitizing. Therefore, when sanitizing a repo, `repobee-sanitizer` will always make sure you have no uncommited files in the repo as well as no syntax errors (in you `sanitizer` syntax). If you do have an error, sanitizer will _not_ sanitize _anything_ untill you fix any errors and run the command again. `repobee-sanitizer` even prevents you from commiting if no changes will be made to the repo!
+
+If you are completely and utterly sure that computers are stupid things and that you are a far superior being, you may use the `--force` flag to ignore any warnings related uncommited files/changes in the repo (Jokes aside this is necessary sometimes, like if you want to commit when no changes were made).
 
 ## Example use cases
 
