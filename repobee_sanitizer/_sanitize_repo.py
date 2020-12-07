@@ -142,7 +142,7 @@ def _git_commit_on_branch(repo_root: pathlib.Path, target_branch: str):
     repo.git.symbolic_ref("HEAD", f"refs/heads/{target_branch}")
     repo.git.add(".", "--force")
     try:
-        repo.git.commit("-m", "'Sanitize files'")
+        repo.git.commit("-m", "Update task template")
     except git.GitCommandError as exc:
         assert "nothing to commit, working tree clean" in str(exc)
         raise EmptyCommitError() from exc
