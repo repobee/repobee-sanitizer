@@ -25,8 +25,10 @@ sanitize_category = plug.cli.category(
     "sanitize",
     action_names=["repo", "file"],
     help="sanitize repositories and files based on markup",
-    description="provides functionality to manage files to be deleted or modified based on a simple markup language",
+    description="provides functionality to manage files to be deleted or "
+    "modified based on a simple markup language",
 )
+
 
 class SanitizeRepo(plug.Plugin, plug.cli.Command):
     """Extension command that provides functionality for sanitizing an entire
