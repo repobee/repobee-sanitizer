@@ -24,10 +24,9 @@ LOGGER = daiquiri.getLogger(__file__)
 sanitize_category = plug.cli.category(
     "sanitize",
     action_names=["repo", "file"],
-    help="Sanitize stuff.",
-    description="Sanitize stuf more elaborately.",
+    help="sanitize repositories and files based on markup",
+    description="provides functionality to manage files to be deleted or modified based on a simple markup language",
 )
-
 
 class SanitizeRepo(plug.Plugin, plug.cli.Command):
     """Extension command that provides functionality for sanitizing an entire
@@ -35,23 +34,27 @@ class SanitizeRepo(plug.Plugin, plug.cli.Command):
     """
 
     __settings__ = plug.cli.command_settings(
-        help="Sanitize a git repository",
-        description="Automatically identifies and sanitizes files in a git "
+        help="sanitize a git repository",
+        description="automatically identifies and sanitizes files in a git "
         "repository",
         action=sanitize_category.repo,
     )
-
     repo_root = plug.cli.option(
         short_name="-r",
+        help="manually provide path to the root of git repository",
         converter=pathlib.Path,
         default=pathlib.Path("."),
     )
     force = plug.cli.flag(
-        help="Ignore warnings for uncommitted files in the repository"
+        help="ignore warnings for uncommitted files in the repository"
     )
     mode_mutex = plug.cli.mutually_exclusive_group(
-        no_commit=plug.cli.flag(),
-        target_branch=plug.cli.option(),
+        no_commit=plug.cli.flag(
+            help="sanitizes on the current branch without creating a commit",
+        ),
+        target_branch=plug.cli.option(
+            help="branch to commit the sanitized output to",
+        ),
         __required__=True,
     )
 
@@ -99,16 +102,16 @@ class SanitizeRepo(plug.Plugin, plug.cli.Command):
 
 class SanitizeFile(plug.Plugin, plug.cli.Command):
     __settings__ = plug.cli.command_settings(
-        help="Sanitize target file",
+        help="sanitize target file",
         description="Sanitizes the target input file and saves the output in "
-        "the specified outfile.",
+        "the specified outfile",
         action=sanitize_category.file,
     )
 
     infile = plug.cli.positional(converter=pathlib.Path)
     outfile = plug.cli.positional(converter=pathlib.Path)
     strip = plug.cli.flag(
-        help="Instead of sanitizing, remove all sanitizer syntax from the file"
+        help="instead of sanitizing, remove all sanitizer markup from the file"
     )
 
     def command(self) -> Optional[plug.Result]:
