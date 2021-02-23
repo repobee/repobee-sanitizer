@@ -177,7 +177,7 @@ spelling of the markers themselves, the markers currently are as follows:
 - REPOBEE-SANITIZER-END
     - REQUIRED: Must exist for each start block
     - Indicates the end of a block.
-- REPOBEE_SANITIZER-SHRED
+- REPOBEE-SANITIZER-SHRED
     - OPTIONAL: Can only exist on the first line of a file. If this exists,
       there cannot be any other markers of any type in the file
     - Having this marker will remove the entire file when running the
