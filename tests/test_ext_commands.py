@@ -479,12 +479,14 @@ class TestSanitizeRepo:
 
     def test_commit_message(self, sanitizer_config, fake_repo):
         target_branch = "student-version"
-        commit_message = "This-is-not-the-default!"
+        commit_message = "This is not the default!"
 
+        # Just split() ruins our commit_message, so we split on
+        # hashtag instead of whitespace
         run_repobee(
-            f"sanitize repo --target-branch {target_branch} "
-            f"--repo-root {fake_repo.path} "
-            f"--commit-message {commit_message}".split()
+            f"sanitize#repo#--target-branch#{target_branch}#"
+            f"--repo-root#{fake_repo.path}#"
+            f"--commit-message#{commit_message}".split("#")
         )
         
         fake_repo.repo.git.checkout(target_branch)
