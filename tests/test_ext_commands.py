@@ -490,21 +490,6 @@ class TestSanitizeRepo:
         commit = fake_repo.head.commit
         assert commit.message == commit_message
 
-    def test_configurable_commit_message(self, sanitizer_config, fake_repo):
-        target_branch = "student-version"
-        commit_message = "'This is not the default!'"
-
-        #Add commit message to config file.
-        sanitizer_config.write_text(f"[DEFAULTS]\nplugins = sanitizer\ncommit-message={commit_message}")
-
-        run_repobee(
-            f"sanitize repo --target-branch {target_branch} "
-            f"--repo-root {fake_repo.path} --force".split()
-        )
-
-        commit = fake_repo.repo.head.commit
-        assert commit.message == commit_message
-
 
 def run_repobee(cmd, workdir=pathlib.Path(".")):
     result = repobee.run(
