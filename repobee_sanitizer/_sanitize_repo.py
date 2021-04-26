@@ -138,7 +138,9 @@ def _clean_repo(repo_path: pathlib.Path):
     repo.git.clean("-dfx")
 
 
-def _git_commit_on_branch(repo_root: pathlib.Path, target_branch: str, commit_message: str):
+def _git_commit_on_branch(
+    repo_root: pathlib.Path, target_branch: str, commit_message: str
+):
     repo = git.Repo(str(repo_root))
     repo.git.symbolic_ref("HEAD", f"refs/heads/{target_branch}")
     repo.git.add(".", "--force")
