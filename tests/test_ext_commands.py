@@ -2,6 +2,7 @@ import collections
 import pathlib
 import sys
 import shutil
+import shlex
 
 import pytest
 import git
@@ -483,10 +484,11 @@ class TestSanitizeRepo:
 
         # Just split() ruins our commit_message, so we split on
         # hashtag instead of whitespace
-        run_repobee(
-            f"sanitize#repo#--target-branch#{target_branch}#"
-            f"--repo-root#{fake_repo.path}#"
-            f"--commit-message#{commit_message}".split("#")
+        run_repobee(shlex.split(
+            f"sanitize repo --target-branch {target_branch} "
+            f"--repo-root {fake_repo.path} "
+            f"--commit-message '{commit_message}'"
+            )
         )
         
         fake_repo.repo.git.checkout(target_branch)
