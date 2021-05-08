@@ -482,8 +482,6 @@ class TestSanitizeRepo:
         target_branch = "student-version"
         commit_message = "This is not the default!"
 
-        # Just split() ruins our commit_message, so we split on
-        # hashtag instead of whitespace
         run_repobee(
             shlex.split(
                 f"sanitize repo --target-branch {target_branch} "
@@ -494,7 +492,7 @@ class TestSanitizeRepo:
 
         fake_repo.repo.git.checkout(target_branch)
         commit = fake_repo.repo.head.commit
-        assert commit.message == (commit_message + "\n")
+        assert commit.message.strip() == commit_message.strip()
 
 
 def run_repobee(cmd, workdir=pathlib.Path(".")):
