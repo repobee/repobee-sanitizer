@@ -2,6 +2,7 @@ import collections
 import pathlib
 import sys
 import shutil
+import shlex
 
 import pytest
 import git
@@ -476,6 +477,22 @@ class TestSanitizeRepo:
         assert f"Not a git repository: '{fake_repo.path}'" in str(
             exc_info.value
         )
+
+    def test_commit_message(self, sanitizer_config, fake_repo):
+        target_branch = "student-version"
+        commit_message = "This is not the default!"
+
+        run_repobee(
+            shlex.split(
+                f"sanitize repo --target-branch {target_branch} "
+                f"--repo-root {fake_repo.path} "
+                f"--commit-message '{commit_message}'"
+            )
+        )
+
+        fake_repo.repo.git.checkout(target_branch)
+        commit = fake_repo.repo.head.commit
+        assert commit.message.strip() == commit_message.strip()
 
 
 def run_repobee(cmd, workdir=pathlib.Path(".")):

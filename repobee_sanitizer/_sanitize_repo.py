@@ -95,6 +95,7 @@ def sanitize_files(
 def sanitize_to_target_branch(
     repo_path: pathlib.Path,
     target_branch: str,
+    commit_message: str,
 ) -> List[_format.FileWithErrors]:
     """Create a commit on the target branch of the specified repo with
     sanitized versions of the provided files, without modifying the
@@ -117,7 +118,7 @@ def sanitize_to_target_branch(
         errors = sanitize_files(repo_copy_path, file_relpaths)
         if errors:
             return errors
-        _git_commit_on_branch(repo_copy_path, target_branch)
+        _git_commit_on_branch(repo_copy_path, target_branch, commit_message)
         _git_fetch(
             src_repo_path=repo_copy_path,
             src_branch=target_branch,
@@ -137,12 +138,14 @@ def _clean_repo(repo_path: pathlib.Path):
     repo.git.clean("-dfx")
 
 
-def _git_commit_on_branch(repo_root: pathlib.Path, target_branch: str):
+def _git_commit_on_branch(
+    repo_root: pathlib.Path, target_branch: str, commit_message: str
+):
     repo = git.Repo(str(repo_root))
     repo.git.symbolic_ref("HEAD", f"refs/heads/{target_branch}")
     repo.git.add(".", "--force")
     try:
-        repo.git.commit("-m", "Update task template")
+        repo.git.commit("-m", commit_message)
     except git.GitCommandError as exc:
         assert "nothing to commit, working tree clean" in str(exc)
         raise EmptyCommitError() from exc

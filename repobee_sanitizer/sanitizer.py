@@ -47,6 +47,11 @@ class SanitizeRepo(plug.Plugin, plug.cli.Command):
         converter=pathlib.Path,
         default=pathlib.Path("."),
     )
+    commit_message = plug.cli.option(
+        short_name="-m",
+        default="Update task template",
+        configurable=True,
+    )
     force = plug.cli.flag(
         help="ignore warnings for uncommitted files in the repository"
     )
@@ -78,7 +83,9 @@ class SanitizeRepo(plug.Plugin, plug.cli.Command):
             LOGGER.info(f"Sanitizing repo and updating {self.target_branch}")
             try:
                 errors = _sanitize_repo.sanitize_to_target_branch(
-                    repo_root, self.target_branch
+                    repo_root,
+                    self.target_branch,
+                    self.commit_message,
                 )
             except _sanitize_repo.EmptyCommitError:
                 return plug.Result(
