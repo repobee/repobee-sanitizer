@@ -7,14 +7,32 @@
 
 # repobee-sanitizer
 
+![Gif of a file being sanitized](SanitizeFile.gif)
+
+# Problem
+
+When working with version control systems (VCS) to maintain code, it is possible to want different versions of a file or even a whole repository. An example of this would be a teacher using GitHub to manage separate template repositories (repo) for code assignments, solutions, and unit tests. 
+
+Managing solutions and assignments separately becomes an issue when updates are made. If the assignment is updated, the solution and tests also have to be updated, and the teacher has to ensure that all repos are compatible. Working with separate repos simultaneously can be a pain as the teacher has to jump around and make changes in different places, essentially cluttering one's workplace.
+
+// TODO mention that having everything in the same repo is not a danger when using this system
+
+# Solution
+
+To combat the issues mentioned above, we have developed sanitizer, a plug-in for RepoBee that allows the user to manage everthing (//This definitely needs to be clarified) inside a single repository.
+
+// OLD maybe keep some parts, either here or in another place
+
 A plugin for RepoBee to sanitize template repositories before being pushed to
-students.  `repobee-sanitizer` adds the commands `sanitize-file` and
+students. `repobee-sanitizer` adds the commands `sanitize-file` and
 `sanitize-repo` that lets the user sanitize files and repos (directories
 currently) respectively.  `repobee-sanitizer` can remove or replace text by
 going through files, looking for certain `REPOBEE-SANITIZER-<type>`
 text-markers. The most simple usage consists of a `REPOBEE-SANITIZER-START` and
 a `REPOBEE-SANITIZER-END` marker, where content between these two markers will
 be removed, or "sanitized" as it were.
+
+# Usage
 
 ## Install
 Use RepoBee's plugin manager to install and activate.
@@ -57,7 +75,9 @@ Another important feature is working with branches, `repobee-sanitizer` was esse
 
 This is done using the `--target-branch <branch-name>` option. For example, if our repo is checked out to the branch `solutions` (that contains full solutions and `sanitizer` `markers`), Running:
 
-` $ repobee sanitize repo --target-branch main`
+``` 
+$ repobee sanitize repo --target-branch main
+```
 
 will sanitize the currently checked out branch (in this case `solutions`) and commit the result to the specified branch, in this case `main`. Successfully using the `--target-branch` feature allows us to essentially retain two concurrent repositories while only having to update one of them should any changes or improvements be made to our course tasks.
 
