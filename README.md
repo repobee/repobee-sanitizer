@@ -43,7 +43,7 @@ $ repobee plugin activate # persistent activation
 
 ## Syntax
 
-for `Sanitizer` to work, marker syntax must be correct, this includes
+For `Sanitizer` to work, marker syntax must be correct, this includes
 spelling of the markers themselves, the markers currently are as follows:
 
 - REPOBEE-SANITIZER-START
@@ -63,19 +63,6 @@ spelling of the markers themselves, the markers currently are as follows:
       `sanitize-repo` or `sanitize-file` commands
 
 If a marker is incorrectly spelled, `repobee-sanitizer` will report an error.
-
-## Prefixing:
-
-`Sanitizer` blocks 
-
-* Determines prefix as any text that comes before `REPOBEE-SANITIZER-START`
-* Only determines prefix on a block-to-block basis, meaning that the prefix
-  selected at a `START` marker must be used until and including the next `END`
-  marker
-  * This means that all `Sanitizer` blocks can have individual
-    prefixes
-* Code between replace and end markers **MUST** also be prefixed
-* Prefixes inside `REPLACE-WITH` blocks are removed when sanitizing
 
 ## Example use cases
 
@@ -170,14 +157,14 @@ class StackTest {
 > Example 3: Sanitized code that is provided to students.
 
 We can see that the only code that remains inside the function is that of the
-`REPLACE-WITH` marker. This gives us the main usage that `repobee-santizer` was
+`REPLACE-WITH` marker. This gives us the main usage that `Sanitizer` was
 developed for, it allows us to combine finished solutions with the
 "skeletonized" solutions that are provided to students.
 
 ## Prefixing
 
 Sometimes (usually) we want code that can run, its a good thing then that
-`repobee-sanitizer` blocks can be commented out! Example 2 will produce the
+`Sanitizer` blocks can be commented out! Example 2 will produce the
 same output as the following:
 
 ```java
@@ -205,14 +192,31 @@ class StackTest {
 }
 ```
 
-> Example 4: Java code with `repobee-sanitizer` related syntax commented out
+> Example 4: Java code with `Sanitizer` related syntax commented out
 
-`repobee-sanitizer` automatically detects if there is a prefix in front of any
+`Sanitizer` automatically detects if there is a prefix in front of any
 markers. This way we can have java comments: `//`, python comments: `#` or
 similar preceding our markers. **This means code can still compile!**
 
+## Prefixing:
+
+As seen above, `Sanitizer` markers and the `REPLACE-WITH` block supports prefixing, or
+code-comments, as it were. This means we can combine assignments and solutions without 
+compilation errors. There are some rules for prefixes to observe:
+
+`Sanitizer`:
+
+* Determines prefix as any text (including whitespace) that comes before `REPOBEE-SANITIZER-START`
+* Only determines prefix on a block-to-block basis, meaning that the prefix
+  selected at a `START` marker must be used until and including the next `END`
+  marker
+  * This means that all `Sanitizer` blocks can have individual
+    prefixes
+* Code between replace and end markers **MUST** also be prefixed if one is used
+* Prefixes inside `REPLACE-WITH` blocks are removed when sanitizing
+
 ## Commands
-`repobee-sanitizer` supports two main commands: `sanitize file` and `sanitize repo`
+`Sanitizer` supports two main commands: `sanitize file` and `sanitize repo`
 
 ### The `sanitize file` command
 
@@ -224,7 +228,7 @@ Running the following command will sanitize `input.txt` (given that it exists) a
 $ repobee sanitize file input.txt sanitized.txt
 ```
 
-The `--strip` flag can also be used to reverse the operation, instead removing all sanitizer syntax from the file.
+The `--strip` flag can also be used to reverse the operation, instead removing all Sanitizer syntax from the file.
 
 ### The `sanitize repo` command
 
@@ -238,9 +242,9 @@ Assuming that you're currently at the root of a Git repository, this will saniti
 If you are not currently at the root of a repository, a path can be specified using the `--repo-root <path>` option.
 
 #### Branches
-Another important feature is working with branches, `repobee-sanitizer` was essentially made to manage differing branches. For an example, a repo can have a `solutions` and a `main` branch, where the `solutions` branch contains an entire solution to an assignment, as well as `sanitizer` `markers` (specified below). When we then sanitize the `solutions` branch, we create a slimmed-down version of our repo (that we would send to students), what we can then do is to specify which branch we want the sanitied version to end up on.
+Another important feature is working with branches, `Sanitizer` was essentially made to manage differing branches. For an example, a repo can have a `solutions` and a `main` branch, where the `solutions` branch contains an entire solution to an assignment, as well as `Sanitizer` `markers` (specified below). When we then sanitize the `solutions` branch, we create a slimmed-down version of our repo (that we would send to students), what we can then do is to specify which branch we want the sanitized version to end up on.
 
-This is done using the `--target-branch <branch-name>` option. For example, if our repo is checked out to the branch `solutions` (that contains full solutions and `sanitizer` `markers`), Running:
+This is done using the `--target-branch <branch-name>` option. For example, if our repo is checked out to the branch `solutions` (that contains full solutions and `Sanitizer` `markers`), Running:
 
 ``` 
 $ repobee sanitize repo --target-branch main
@@ -249,7 +253,7 @@ $ repobee sanitize repo --target-branch main
 will sanitize the currently checked out branch (in this case `solutions`) and commit the result to the specified branch, in this case `main`. Successfully using the `--target-branch` feature allows us to essentially retain two concurrent repositories while only having to update one of them should any changes or improvements be made to our course tasks.
 
 #### Errors / Force
-`repobee-sanitizer` does its best to ensure that nothing breaks while sanitizing. Therefore, when sanitizing a repo, `repobee-sanitizer` will always make sure you have no uncommited files in the repo as well as no syntax errors in your `sanitizer` syntax. If you do have an error, sanitizer will _not_ sanitize _anything_ until you fix any errors and run the command again. `repobee-sanitizer` even prevents you from committing if no changes will be made to the repo!
+`Sanitizer` does its best to ensure that nothing breaks while sanitizing. Therefore, when sanitizing a repo, `Sanitizer` will always make sure you have no uncommitted files in the repo as well as no syntax errors in your `Sanitizer` syntax. If you do have an error, `Sanitizer` will _not_ sanitize _anything_ until you fix any errors and run the command again. `Sanitizer` even prevents you from committing if no changes will be made to the repo!
 
 If you are completely and utterly sure that computers are stupid things and that you are a far superior being, you may use the `--force` flag to ignore any warnings related to uncommitted files/changes in the repo (Jokes aside this is necessary sometimes, like if you want to commit when no changes were made).
 
