@@ -198,11 +198,7 @@ class StackTest {
 markers. This way we can have java comments: `//`, python comments: `#` or
 similar preceding our markers. **This means code can still compile!**
 
-## Prefixing:
-
-As seen above, `Sanitizer` markers and the `REPLACE-WITH` block supports prefixing, or
-code-comments, as it were. This means we can combine assignments and solutions without 
-compilation errors. There are some rules for prefixes to observe:
+There are some rules for prefixing to observe:
 
 `Sanitizer`:
 
