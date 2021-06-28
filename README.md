@@ -1,3 +1,5 @@
+![Gif of a file being sanitized](SanitizeFile.gif)
+
 ![Build Status](https://github.com/repobee/repobee-sanitizer/workflows/tests/badge.svg)
 [![Code Coverage](https://codecov.io/gh/repobee/repobee-sanitizer/branch/master/graph/badge.svg)](https://codecov.io/gh/repobee/repobee-sanitizer)
 ![Supported Python Versions](https://img.shields.io/badge/python-3.6%2C%203.7%2C%203.8-blue.svg)
@@ -5,7 +7,6 @@
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Code Style: Black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
 
-![Gif of a file being sanitized](SanitizeFile.gif)
 # Overview
 
 ## Problem
