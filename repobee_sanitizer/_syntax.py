@@ -82,7 +82,7 @@ def check_syntax(lines: List[str]) -> List[_format.Error]:
             has_blocks = True
             if last != Markers.END:
                 _error("START block must begin file or follow an END block")
-            prefix = re.match(rf"(.*?){Markers.START.value}", line).group(1)
+            prefix = re.match(rf"(.*?){Markers.START.value}", line).group(1).strip()
             last = Markers.START
         elif marker == Markers.REPLACE:
             if last != Markers.START:
@@ -95,7 +95,7 @@ def check_syntax(lines: List[str]) -> List[_format.Error]:
 
         if (
             last == Markers.REPLACE or marker == Markers.END
-        ) and not line.startswith(prefix):
+        ) and not line.lstrip().startswith(prefix):
             _error(f"Missing prefix: {prefix}")
 
         if marker == Markers.END:

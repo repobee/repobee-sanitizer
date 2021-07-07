@@ -61,7 +61,8 @@ def discover_dirty_files(
 
 
 def sanitize_files(
-    basedir: pathlib.Path, file_relpaths: List[_fileutils.RelativePath]
+    basedir: pathlib.Path,
+    file_relpaths: List[_fileutils.RelativePath],
 ) -> List[_format.FileWithErrors]:
     """Checks the syntax of the provided files and reports any found errors.
     If any errors are found, report errors and exits. If there are no errors,
@@ -93,9 +94,7 @@ def sanitize_files(
 
 
 def sanitize_to_target_branch(
-    repo_path: pathlib.Path,
-    target_branch: str,
-    commit_message: str,
+    repo_path: pathlib.Path, target_branch: str, commit_message: str
 ) -> List[_format.FileWithErrors]:
     """Create a commit on the target branch of the specified repo with
     sanitized versions of the provided files, without modifying the
