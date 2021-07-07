@@ -16,7 +16,7 @@ class StackTest {
         assertThat(emptyStackTop, equalTo(value));
         assertThat(stackTop, equalTo(value));
 //REPOBEE-SANITIZER-REPLACE-WITH
-//      fail("Not implemented");
+//        fail("Not implemented");
 //REPOBEE-SANITIZER-END
     }
 }
@@ -39,7 +39,7 @@ class StackTest {
         assertThat(emptyStackTop, equalTo(value));
         assertThat(stackTop, equalTo(value));
 //     REPOBEE-SANITIZER-REPLACE-WITH
-    //  fail("Not implemented");
+    //    fail("Not implemented");
           //REPOBEE-SANITIZER-END
     }
 }
