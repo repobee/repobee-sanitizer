@@ -61,8 +61,7 @@ def discover_dirty_files(
 
 
 def sanitize_files(
-    basedir: pathlib.Path,
-    file_relpaths: List[_fileutils.RelativePath],
+    basedir: pathlib.Path, file_relpaths: List[_fileutils.RelativePath]
 ) -> List[_format.FileWithErrors]:
     """Checks the syntax of the provided files and reports any found errors.
     If any errors are found, report errors and exits. If there are no errors,

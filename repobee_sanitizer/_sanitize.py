@@ -24,9 +24,7 @@ def sanitize_text(lines: List[str], strip: bool = False) -> Optional[str]:
     return "\n".join(sanitized_string)
 
 
-def _sanitize(
-    lines: List[str], strip: bool = False,
-) -> Iterable[str]:
+def _sanitize(lines: List[str], strip: bool = False) -> Iterable[str]:
     keep = True
     prefix = ""
     in_replace = False
