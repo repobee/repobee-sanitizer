@@ -136,13 +136,24 @@ class TestSanitizeRepo:
         fake_repo.repo.git.checkout(pr_branch_name)
         fake_repo.repo.git.reset("--hard")
         assert_expected_text_in_files(fake_repo.file_infos)
+        
 
     def test_target_branch_not_modified_by_pr(self, sanitizer_config, fake_repo):
         """Test that sanitizer doesnt modify the target branch when sanitizing to PR branch"""
         target_branch = "student-version"
 
-        fake_repo.repo.create_head(target_branch)
-        target_branch_before = get_file_contents(fake_repo.file_infos)
+        fake_repo.repo.git.checkout("HEAD", b=target_branch)
+
+        other_file_contents = (
+            "Some boring\ncontents in a non-interesting\nfile"
+        )
+        other_file = fake_repo.path / "some-other-file.txt"
+        other_file.write_text(other_file_contents)
+        fake_repo.repo.git.add(str(other_file))
+        fake_repo.repo.git.commit("-m", "'Add other file'")
+
+        # Jump back to the branch we sanitize from
+        fake_repo.repo.git.checkout(fake_repo.default_branch)
 
         run_repobee(
             f"sanitize repo --target-branch {target_branch} -p".split(),
@@ -150,8 +161,8 @@ class TestSanitizeRepo:
         )
 
         fake_repo.repo.git.checkout(target_branch)
-        target_branch_after = get_file_contents(fake_repo.file_infos)
-        assert target_branch_before == target_branch_after
+        other_file_contents_after = other_file.read_text(encoding="utf8")
+        assert other_file_contents == other_file_contents_after
 
     def test_no_commit_default_root(self, sanitizer_config, fake_repo):
 
@@ -584,9 +595,3 @@ def assert_expected_text_in_files(file_infos):
         asserted = True
         assert_expected_text_in_file(file_info)
     assert asserted, "Loop not run, test error"
-
-
-def get_file_contents(file_infos):
-    info = []
-    for file_info in file_infos:
-        info.append(file_info.abspath.read_bytes())
