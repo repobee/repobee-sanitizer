@@ -123,7 +123,7 @@ class TestSanitizeRepo:
         fake_repo.repo.git.reset("--hard")
         assert_expected_text_in_files(fake_repo.file_infos)
 
-    def test_target_branch_with_pull_request(self, sanitizer_config, fake_repo):
+    def test_sanitize_to_pull_request_branch(self, sanitizer_config, fake_repo):
         """Test that sanitizer will commit to a secondary branch from where a pull request can be created"""
         target_branch = "student-version"
         pr_branch_name = "sanitizer-pull-request"
@@ -137,8 +137,21 @@ class TestSanitizeRepo:
         fake_repo.repo.git.reset("--hard")
         assert_expected_text_in_files(fake_repo.file_infos)
 
-        #Check that a push has been made
-        assert fake_repo.repo.iter_commits(f"{pr_branch_name}..origin/{pr_branch_name}") == 0
+    def test_target_branch_not_modified_by_pr(self, sanitizer_config, fake_repo):
+        """Test that sanitizer doesnt modify the target branch when sanitizing to PR branch"""
+        target_branch = "student-version"
+
+        fake_repo.repo.create_head(target_branch)
+        target_branch_before = get_file_contents(fake_repo.file_infos)
+
+        run_repobee(
+            f"sanitize repo --target-branch {target_branch} -p".split(),
+            workdir=fake_repo.path,
+        )
+
+        fake_repo.repo.git.checkout(target_branch)
+        target_branch_after = get_file_contents(fake_repo.file_infos)
+        assert target_branch_before == target_branch_after
 
     def test_no_commit_default_root(self, sanitizer_config, fake_repo):
 
@@ -571,3 +584,9 @@ def assert_expected_text_in_files(file_infos):
         asserted = True
         assert_expected_text_in_file(file_info)
     assert asserted, "Loop not run, test error"
+
+
+def get_file_contents(file_infos):
+    info = []
+    for file_info in file_infos:
+        info.append(file_info.abspath.read_bytes())
