@@ -123,13 +123,13 @@ class TestSanitizeRepo:
         fake_repo.repo.git.reset("--hard")
         assert_expected_text_in_files(fake_repo.file_infos)
 
-    def test_target_branch_with_pull_request(self, sanitzier_config, fake_repo):
+    def test_target_branch_with_pull_request(self, sanitizer_config, fake_repo):
         """Test that sanitizer will commit to a secondary branch from where a pull request will be created"""
         target_branch = "student-version"
         pr_branch_name = "sanitizer-pull-request"
 
         run_repobee(
-            f"sanitize repo --target-branch {target_branch} --pr"
+            f"sanitize repo --target-branch {target_branch} -p".split()
         )
 
         fake_repo.repo.git.checkout(pr_branch_name)
