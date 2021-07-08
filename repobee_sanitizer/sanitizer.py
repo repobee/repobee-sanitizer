@@ -48,19 +48,17 @@ class SanitizeRepo(plug.Plugin, plug.cli.Command):
         default=pathlib.Path("."),
     )
     commit_message = plug.cli.option(
-        short_name="-m",
-        default="Update task template",
-        configurable=True,
+        short_name="-m", default="Update task template", configurable=True
     )
     force = plug.cli.flag(
         help="ignore warnings for uncommitted files in the repository"
     )
     mode_mutex = plug.cli.mutually_exclusive_group(
         no_commit=plug.cli.flag(
-            help="sanitizes on the current branch without creating a commit",
+            help="sanitizes on the current branch without creating a commit"
         ),
         target_branch=plug.cli.option(
-            help="branch to commit the sanitized output to",
+            help="branch to commit the sanitized output to"
         ),
         __required__=True,
     )
@@ -74,9 +72,7 @@ class SanitizeRepo(plug.Plugin, plug.cli.Command):
         message = _sanitize_repo.check_repo_state(repo_root)
         if message and not self.force:
             return plug.Result(
-                name="sanitize-repo",
-                msg=message,
-                status=plug.Status.ERROR,
+                name="sanitize-repo", msg=message, status=plug.Status.ERROR
             )
 
         if self.no_commit:
@@ -147,9 +143,7 @@ class SanitizeFile(plug.Plugin, plug.cli.Command):
             msg = _format.format_error_string(file_errors)
 
             return plug.Result(
-                name="sanitize-file",
-                msg=msg,
-                status=plug.Status.ERROR,
+                name="sanitize-file", msg=msg, status=plug.Status.ERROR
             )
 
         result = _sanitize.sanitize_text(infile_content, strip=self.strip)
