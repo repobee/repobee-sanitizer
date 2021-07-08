@@ -96,6 +96,7 @@ def sanitize_to_target_branch(
     repo_path: pathlib.Path,
     target_branch: str,
     commit_message: str,
+    create_pr_branch: bool,
 ) -> List[_format.FileWithErrors]:
     """Create a commit on the target branch of the specified repo with
     sanitized versions of the provided files, without modifying the
@@ -110,6 +111,21 @@ def sanitize_to_target_branch(
     Returns:
         List of errors if any errors are found, otherwise an empty list.
     """
+    
+    if create_pr_branch:
+        repo = git.Repo(str(repo_path))
+        
+        # If target branch is empty, create an empty commit or we cant create a new branch for PR
+        try:
+            repo.git.symbolic_ref("HEAD", f"refs/heads/{target_branch}")
+            repo.index.diff("HEAD")
+        except git.BadName as exc:
+            repo.git.commit("--allow-empty", "-m", "initial commit")
+
+        # Create and move to new branch before sanitizing
+        target_branch = "sanitizer-pull-request"
+        repo.create_head(target_branch)
+
     with tempfile.TemporaryDirectory() as tmpdir:
         repo_copy_path = pathlib.Path(tmpdir) / "repo"
         shutil.copytree(src=repo_path, dst=repo_copy_path)
@@ -149,7 +165,6 @@ def _git_commit_on_branch(
     except git.GitCommandError as exc:
         assert "nothing to commit, working tree clean" in str(exc)
         raise EmptyCommitError() from exc
-
 
 def _git_fetch(
     src_repo_path: pathlib.Path,

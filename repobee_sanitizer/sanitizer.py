@@ -64,6 +64,10 @@ class SanitizeRepo(plug.Plugin, plug.cli.Command):
         ),
         __required__=True,
     )
+    create_pr_branch = plug.cli.flag(
+        short_name="-p",
+        help="create and push to a special branch 'sanitizer-pull-request' to safely merge using pull requests in github",
+    )
 
     def command(self) -> Optional[plug.Result]:
         repo_root = self.repo_root.absolute()
@@ -86,6 +90,7 @@ class SanitizeRepo(plug.Plugin, plug.cli.Command):
                     repo_root,
                     self.target_branch,
                     self.commit_message,
+                    self.create_pr_branch,
                 )
             except _sanitize_repo.EmptyCommitError:
                 return plug.Result(
