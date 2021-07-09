@@ -118,7 +118,7 @@ def create_pr_branch(
     repo.git.branch(pr_branch_name, target_branch)
 
     # Go back to the source branch
-    repo.git.symbolic_ref("HEAD", source_branch)
+    repo.git.checkout(source_branch)
 
 
 def sanitize_to_target_branch(
