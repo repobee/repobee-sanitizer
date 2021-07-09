@@ -126,7 +126,9 @@ class TestSanitizeRepo:
     def test_sanitize_to_pull_request_branch(
         self, sanitizer_config, fake_repo
     ):
-        """Test that sanitizer will commit to a secondary branch from where a pull request can be created"""
+        """Test that sanitizer will commit to a secondary branch from where a
+        pull request can be created
+        """
         target_branch = "student-version"
         pr_branch_name = "sanitizer-pull-request"
 
@@ -142,7 +144,9 @@ class TestSanitizeRepo:
     def test_target_branch_not_modified_by_pr(
         self, sanitizer_config, fake_repo
     ):
-        """Test that sanitizer doesnt modify the target branch when sanitizing to PR branch"""
+        """Test that sanitizer doesnt modify the target branch when
+        sanitizing to PR branch
+        """
         target_branch = "student-version"
 
         fake_repo.repo.git.checkout("HEAD", b=target_branch)

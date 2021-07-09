@@ -97,11 +97,12 @@ def create_pr_branch(
 ):
     """Create a new branch from the target_branch that we sanitize to
     and a pull request can be created from.
-    
+
     Args:
         repo_path: Path to the repository
         target_branch: The path to create the pull request branch from
-        pr_branch_name: The name of the branch to sanitize to and create a pr from
+        pr_branch_name: The name of the branch to sanitize to and create a pr
+        from
     """
 
     repo = git.Repo(str(repo_path))
@@ -111,7 +112,7 @@ def create_pr_branch(
     try:
         repo.git.symbolic_ref("HEAD", f"refs/heads/{target_branch}")
         repo.index.diff("HEAD")
-    except git.BadName as exc:
+    except git.BadName:
         repo.git.commit("--allow-empty", "-m", "initial commit")
 
     # Create the pr branch from the target branch

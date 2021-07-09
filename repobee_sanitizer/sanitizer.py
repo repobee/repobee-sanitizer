@@ -64,7 +64,10 @@ class SanitizeRepo(plug.Plugin, plug.cli.Command):
     )
     create_pr_branch = plug.cli.flag(
         short_name="-p",
-        help="create and push to a special branch 'sanitizer-pull-request' to safely merge using pull requests in github",
+        help=(
+            "create and push to a special branch 'sanitizer-pull-request'"
+            "to safely merge using pull requests in github"
+        ),
     )
 
     def command(self) -> Optional[plug.Result]:
