@@ -92,11 +92,37 @@ def sanitize_files(
     return []
 
 
+def create_pr_branch(
+    repo_path: pathlib.Path, target_branch: str, pr_branch_name: str
+):
+    """Create a new branch from the target_branch that we sanitize to
+    and a pull request can be created from.
+    
+    Args:
+        repo_path: Path to the repository
+        target_branch: The path to create the pull request branch from
+        pr_branch_name: The name of the branch to sanitize to and create a pr from
+    """
+
+    repo = git.Repo(str(repo_path))
+    source_branch = repo.head.ref.path
+
+    # Assures the target branch is not empty
+    try:
+        repo.git.symbolic_ref("HEAD", f"refs/heads/{target_branch}")
+        repo.index.diff("HEAD")
+    except git.BadName as exc:
+        repo.git.commit("--allow-empty", "-m", "initial commit")
+
+    # Create the pr branch from the target branch
+    repo.git.branch(pr_branch_name, target_branch)
+
+    # Go back to the source branch
+    repo.git.symbolic_ref("HEAD", source_branch)
+
+
 def sanitize_to_target_branch(
-    repo_path: pathlib.Path,
-    target_branch: str,
-    commit_message: str,
-    create_pr_branch: bool,
+    repo_path: pathlib.Path, target_branch: str, commit_message: str
 ) -> List[_format.FileWithErrors]:
     """Create a commit on the target branch of the specified repo with
     sanitized versions of the provided files, without modifying the
@@ -111,20 +137,6 @@ def sanitize_to_target_branch(
     Returns:
         List of errors if any errors are found, otherwise an empty list.
     """
-
-    if create_pr_branch:
-        repo = git.Repo(str(repo_path))
-
-        # If target branch is empty, create an empty commit or we cant create a new branch for PR
-        try:
-            repo.git.symbolic_ref("HEAD", f"refs/heads/{target_branch}")
-            repo.index.diff("HEAD")
-        except git.BadName as exc:
-            repo.git.commit("--allow-empty", "-m", "initial commit")
-
-        # Create and move to new branch before sanitizing
-        target_branch = "sanitizer-pull-request"
-        repo.create_head(target_branch)
 
     with tempfile.TemporaryDirectory() as tmpdir:
         repo_copy_path = pathlib.Path(tmpdir) / "repo"
