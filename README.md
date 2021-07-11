@@ -203,18 +203,18 @@ There are some rules for prefixing to observe:
 
 `Sanitizer`:
 
-* Determines prefix as any text before `REPOBEE-SANITIZER-START`
+* Removes prefixes on `REPLACE-WITH` blocks when sanitizing
+  * Only the first occurrence of a prefix on each line is removed, allowing code comments to be preserved when sanitizing, see figure 4
+* Determines the prefix as any text before `REPOBEE-SANITIZER-START`
   * This excludes any whitespace before the `START` marker
     * Pro-Tip: There can be any amount of whitespace on any line using a prefix, see figure 4. This allows easy alignment of code
   * When the prefix is removed after running `Sanitizer`, all whitespace is preserved, only the prefix is removed
-* Only the first occurrence of the prefix is removed, allowing code comments to be preserved when sanitizing, see figure 4
-* Only determines prefix on a block-to-block basis, meaning that the prefix
+* Determines prefix on a block-to-block basis, meaning that the prefix
   selected at a `START` marker must be used until and including the next `END`
   marker
   * This means that all `Sanitizer` blocks can have individual
     prefixes
 * Code between replace and end markers **MUST** also be prefixed if one is used
-* Prefixes inside `REPLACE-WITH` blocks are removed when sanitizing
 
 ## Commands
 `Sanitizer` supports two main commands: `sanitize file` and `sanitize repo`
