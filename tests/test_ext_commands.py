@@ -149,7 +149,7 @@ class TestSanitizeRepo:
         """
         target_branch = "student-version"
 
-        fake_repo.repo.git.checkout("HEAD", b=target_branch)
+        fake_repo.repo.git.checkout(b=target_branch)
 
         other_file_contents = (
             "Some boring\ncontents in a non-interesting\nfile"
@@ -159,7 +159,6 @@ class TestSanitizeRepo:
         fake_repo.repo.git.add(str(other_file))
         fake_repo.repo.git.commit("-m", "'Add other file'")
 
-        # Jump back to the branch we sanitize from
         fake_repo.repo.git.checkout(fake_repo.default_branch)
 
         run_repobee(
