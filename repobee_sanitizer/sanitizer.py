@@ -85,15 +85,14 @@ class SanitizeRepo(plug.Plugin, plug.cli.Command):
         else:
             LOGGER.info(f"Sanitizing repo and updating {self.target_branch}")
             try:
-                if self.create_pr_branch:
-                    pr_branch_name = "sanitizer-pull-request"
-                    _sanitize_repo.create_pr_branch(
-                        repo_root, self.target_branch, pr_branch_name
-                    )
-                    self.target_branch = pr_branch_name
+                self.effective_target_branch = (
+                    self._resolve_effective_target_branch(repo_root)
+                )
 
                 errors = _sanitize_repo.sanitize_to_target_branch(
-                    repo_root, self.target_branch, self.commit_message
+                    repo_root,
+                    self.effective_target_branch,
+                    self.commit_message,
                 )
             except _sanitize_repo.EmptyCommitError:
                 return plug.Result(
@@ -115,6 +114,13 @@ class SanitizeRepo(plug.Plugin, plug.cli.Command):
             msg="Successfully sanitized repo",
             status=plug.Status.SUCCESS,
         )
+
+    def _resolve_effective_target_branch(self, repo_root: pathlib.Path):
+        if self.create_pr_branch:
+            return _sanitize_repo.create_pr_branch(
+                repo_root, self.target_branch
+            )
+        return self.target_branch
 
 
 class SanitizeFile(plug.Plugin, plug.cli.Command):
