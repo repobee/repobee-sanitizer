@@ -11,22 +11,22 @@
 
 ## Problem
 
-When working with version control systems to maintain code, it is possible to want different versions of a file or even a whole repository. An example of this would be a teacher using GitHub to manage separate template repositories (repo) for code assignments, solutions, and unit tests. 
+When working with version control systems to maintain code, it is possible to want different versions of a file or even a whole repository. An example of this would be a teacher using GitHub to manage separate template repositories (repo) for code assignments, solutions, and unit tests.
 
 Managing solutions and assignments separately becomes an issue when updates are made. If the assignment is updated, the solution and tests also have to be updated, and the teacher has to ensure that all repos are compatible, we call this drift. Working with separate repos simultaneously can be a pain as the teacher has to jump around and make changes in different places, essentially cluttering one's workplace.
 
 ## Solution
 
-To combat the issues mentioned above, we have developed `Sanitizer`, a plug-in for RepoBee that 
+To combat the issues mentioned above, we have developed `Sanitizer`, a plug-in for RepoBee that
 allows the user to manage their assignments and solutions inside a single repository.
 
 `Sanitizer` adds the commands `sanitize file` and `sanitize repo` that lets the user sanitize
-files and git repositories. `Sanitizer` works by removing or replacing text by going through 
-files as text, looking for a certain markup described below. The most simple usage 
-consists of a start and end marker, where content between these two markers will be 
+files and git repositories. `Sanitizer` works by removing or replacing text by going through
+files as text, looking for a certain markup described below. The most simple usage
+consists of a start and end marker, where content between these two markers will be
 removed, or "sanitized" as it were.
 
-This solution allows teachers to safely work inside a single repository, without the chance of solutions reaching students when creating student repositories (human error not accounted for). 
+This solution allows teachers to safely work inside a single repository, without the chance of solutions reaching students when creating student repositories (human error not accounted for).
 The problem of drift is also removed, and as a bonus, teachers can easily create their assignments
 using solution driven development.
 
@@ -187,7 +187,7 @@ class StackTest {
         assertThat(emptyStackTop, equalTo(value));
         assertThat(stackTop, equalTo(value));
 //REPOBEE-SANITIZER-REPLACE-WITH
-//        fail("Not implemented");
+        //fail("Not implemented");  //This am a comment, it will not be removed by sanitizer
 //REPOBEE-SANITIZER-END
     }
 }
@@ -203,7 +203,11 @@ There are some rules for prefixing to observe:
 
 `Sanitizer`:
 
-* Determines prefix as any text (including whitespace) that comes before `REPOBEE-SANITIZER-START`
+* Determines prefix as any text before `REPOBEE-SANITIZER-START`
+  * This excludes any whitespace before the `START` marker
+    * Pro-Tip: There can be any amount of whitespace on any line using a prefix, see figure 4. This allows easy alignment of code
+  * When the prefix is removed after running `Sanitizer`, all whitespace is preserved, only the prefix is removed
+* Only the first occurrence of the prefix is removed, allowing code comments to be preserved when sanitizing, see figure 4
 * Only determines prefix on a block-to-block basis, meaning that the prefix
   selected at a `START` marker must be used until and including the next `END`
   marker
@@ -217,7 +221,7 @@ There are some rules for prefixing to observe:
 
 ### The `sanitize file` command
 
-`repobee sanitize file <infile> <outfile>` performs the sanitization operation described below directly on a file `infile` and writes the output to `outfile`. 
+`repobee sanitize file <infile> <outfile>` performs the sanitize operation described below directly on a file `infile` and writes the output to `outfile`.
 
 Running the following command will sanitize `input.txt` (given that it exists) and create the file `sanitized.txt` containing, you guessed it, the sanitized file. `sanitized.txt` will be overwritten if it already exists.
 
@@ -243,7 +247,7 @@ Another important feature is working with branches, `Sanitizer` was essentially 
 
 This is done using the `--target-branch <branch-name>` option. For example, if our repo is checked out to the branch `solutions` (that contains full solutions and `Sanitizer` `markers`), Running:
 
-``` 
+```
 $ repobee sanitize repo --target-branch main
 ```
 
