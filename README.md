@@ -165,8 +165,7 @@ developed for, it allows us to combine finished solutions with the
 ## Prefixing
 
 Sometimes (usually) we want code that can run, its a good thing then that
-`Sanitizer` blocks can be commented out! Example 2 will produce the
-same output as the following:
+`Sanitizer` blocks can be commented out! Example 2 works the same as the following:
 
 ```java
 class StackTest {
@@ -187,7 +186,7 @@ class StackTest {
         assertThat(emptyStackTop, equalTo(value));
         assertThat(stackTop, equalTo(value));
 //REPOBEE-SANITIZER-REPLACE-WITH
-        //fail("Not implemented");  //This am a comment, it will not be removed by sanitizer
+        //fail("Not implemented");  //This is a comment, it will not be removed by sanitizer
 //REPOBEE-SANITIZER-END
     }
 }
@@ -204,10 +203,10 @@ There are some rules for prefixing to observe:
 `Sanitizer`:
 
 * Removes prefixes on `REPLACE-WITH` blocks when sanitizing
-  * Only the first occurrence of a prefix on each line is removed, allowing code comments to be preserved when sanitizing, see figure 4
+  * Only the first occurrence of a prefix on each line is removed, allowing code comments to be preserved when sanitizing, see example 4
 * Determines the prefix as any text before `REPOBEE-SANITIZER-START`
   * This excludes any whitespace before the `START` marker
-    * Pro-Tip: There can be any amount of whitespace on any line using a prefix, see figure 4. This allows easy alignment of code
+    * Pro-Tip: There can be any amount of whitespace on any line using a prefix, see example 4. This allows easy alignment of code
   * When the prefix is removed after running `Sanitizer`, all whitespace is preserved, only the prefix is removed
 * Determines prefix on a block-to-block basis, meaning that the prefix
   selected at a `START` marker must be used until and including the next `END`
