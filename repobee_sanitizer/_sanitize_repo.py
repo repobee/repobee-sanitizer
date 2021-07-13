@@ -92,6 +92,11 @@ def sanitize_files(
     return []
 
 
+def target_branch_empty(repo_path: pathlib.Path, target_branch: str) -> bool:
+    # repo = git.Repo(str(repo_path))
+    pass
+
+
 def create_pr_branch(repo_path: pathlib.Path, target_branch: str) -> str:
     """Create a new branch from the target_branch that we sanitize to
     and a pull request can be created from.
@@ -104,17 +109,8 @@ def create_pr_branch(repo_path: pathlib.Path, target_branch: str) -> str:
     pr_branch_name = "sanitizer-pull-request"
 
     repo = git.Repo(str(repo_path))
-    source_branch = repo.head.ref.path
-
-    try:
-        repo.git.symbolic_ref("HEAD", f"refs/heads/{target_branch}")
-        repo.index.diff("HEAD")
-    except git.BadName:
-        repo.git.commit("--allow-empty", "-m", "initial commit")
 
     repo.git.branch(pr_branch_name, target_branch)
-
-    repo.git.checkout(source_branch)
 
     return pr_branch_name
 

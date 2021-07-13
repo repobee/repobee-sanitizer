@@ -84,11 +84,23 @@ class SanitizeRepo(plug.Plugin, plug.cli.Command):
             errors = _sanitize_repo.sanitize_files(repo_root, file_relpaths)
         else:
             LOGGER.info(f"Sanitizing repo and updating {self.target_branch}")
-            try:
-                self.effective_target_branch = (
-                    self._resolve_effective_target_branch(repo_root)
+
+            if (
+                self.create_pr_branch
+                and self._sanitize_repo.target_branch_empty()
+            ):
+                return plug.Result(
+                    name="sanitize-repo",
+                    msg="Can not create a pull request branch from empty"
+                    "target_branch",
+                    status=plug.Status.ERROR,
                 )
 
+            self.effective_target_branch = (
+                self._resolve_effective_target_branch(repo_root)
+            )
+
+            try:
                 errors = _sanitize_repo.sanitize_to_target_branch(
                     repo_root,
                     self.effective_target_branch,

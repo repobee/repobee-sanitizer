@@ -133,6 +133,11 @@ class TestSanitizeRepo:
         pr_branch_name = "sanitizer-pull-request"
 
         run_repobee(
+            f"sanitize repo --target-branch {target_branch}".split(),
+            workdir=fake_repo.path,
+        )
+
+        run_repobee(
             f"sanitize repo --target-branch {target_branch} -p".split(),
             workdir=fake_repo.path,
         )
@@ -169,6 +174,25 @@ class TestSanitizeRepo:
         fake_repo.repo.git.checkout(target_branch)
         other_file_contents_after = other_file.read_text(encoding="utf8")
         assert other_file_contents == other_file_contents_after
+
+    def test_pr_from_empty_target_branch_return_error(
+        self, sanitizer_config, fake_repo
+    ):
+        """Test that sanitizer returns a plugResult error if there are no
+        commits on the target_branch.
+        """
+        target_branch = "student-version"
+
+        result = run_repobee(
+            f"sanitize repo --target-branch {target_branch} -p".split(),
+            workdir=fake_repo.path,
+        )
+
+        assert (
+            result.status == plug.Status.ERROR
+            and "Can not create a pull request branch from empty target_branch"
+            in result.msg
+        )
 
     def test_no_commit_default_root(self, sanitizer_config, fake_repo):
 
