@@ -6,6 +6,7 @@
 import pathlib
 import shutil
 import tempfile
+import time
 
 from typing import Optional, List
 
@@ -21,6 +22,10 @@ LOGGER = daiquiri.getLogger(__file__)
 
 
 class EmptyCommitError(plug.PlugError):
+    pass
+
+
+class EmptyTargetBranchError(plug.PlugError):
     pass
 
 
@@ -92,9 +97,19 @@ def sanitize_files(
     return []
 
 
-def target_branch_empty(repo_path: pathlib.Path, target_branch: str) -> bool:
-    # repo = git.Repo(str(repo_path))
-    pass
+def check_empty_target_branch(
+    repo_path: pathlib.Path, target_branch: str
+) -> bool:
+    repo = git.Repo(str(repo_path))
+    source_branch = repo.head.ref.path
+
+    try:
+        repo.git.symbolic_ref("HEAD", f"refs/heads/{target_branch}")
+        repo.index.diff("HEAD")
+        repo.git.symbolic_ref("HEAD", source_branch)
+    except git.BadName as exc:
+        repo.git.symbolic_ref("HEAD", source_branch)
+        raise EmptyTargetBranchError() from exc
 
 
 def create_pr_branch(repo_path: pathlib.Path, target_branch: str) -> str:
@@ -104,12 +119,14 @@ def create_pr_branch(repo_path: pathlib.Path, target_branch: str) -> str:
     Args:
         repo_path: Path to the repository
         target_branch: The branch to create the pull request branch from
+
+    Returns:
+        The target branch name with an added timestamp
     """
 
-    pr_branch_name = "sanitizer-pull-request"
+    pr_branch_name = target_branch + "-pr-" + str(time.time()).split(".")[0]
 
     repo = git.Repo(str(repo_path))
-
     repo.git.branch(pr_branch_name, target_branch)
 
     return pr_branch_name
