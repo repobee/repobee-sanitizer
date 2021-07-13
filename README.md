@@ -198,7 +198,7 @@ class StackTest {
 markers. This way we can have java comments: `//`, python comments: `#` or
 similar preceding our markers. **This means code can still compile!**
 
-There are some rules for prefixing to observe:
+### There are some rules for prefixing to observe:
 
 Prefixes are valid for a single block, and are defined on the same line as the `REPOBEE-SANITIZER-START` marker of that block. All text found before the `START` marker (stripped fom whitespace) counts as the prefix.
 
