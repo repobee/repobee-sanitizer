@@ -3,6 +3,7 @@ import pathlib
 import sys
 import shutil
 import shlex
+import time
 
 import pytest
 import git
@@ -130,7 +131,9 @@ class TestSanitizeRepo:
         pull request can be created
         """
         target_branch = "student-version"
-        pr_branch_name = "sanitizer-pull-request"
+        pr_branch_name = (
+            target_branch + "-pr-" + str(time.time()).split(".")[0]
+        )
 
         run_repobee(
             f"sanitize repo --target-branch {target_branch}".split(),
@@ -190,8 +193,8 @@ class TestSanitizeRepo:
 
         assert (
             result.status == plug.Status.ERROR
-            and "Can not create a pull request branch from empty target_branch"
-            in result.msg
+            and f"Can not create a pull request branch from empty "
+            f"target branch {target_branch}" in result.msg
         )
 
     def test_no_commit_default_root(self, sanitizer_config, fake_repo):
