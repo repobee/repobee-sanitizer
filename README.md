@@ -11,22 +11,22 @@
 
 ## Problem
 
-When working with version control systems to maintain code, it is possible to want different versions of a file or even a whole repository. An example of this would be a teacher using GitHub to manage separate template repositories (repo) for code assignments, solutions, and unit tests. 
+When working with version control systems to maintain code, it is possible to want different versions of a file or even a whole repository. An example of this would be a teacher using GitHub to manage separate template repositories (repo) for code assignments, solutions, and unit tests.
 
 Managing solutions and assignments separately becomes an issue when updates are made. If the assignment is updated, the solution and tests also have to be updated, and the teacher has to ensure that all repos are compatible, we call this drift. Working with separate repos simultaneously can be a pain as the teacher has to jump around and make changes in different places, essentially cluttering one's workplace.
 
 ## Solution
 
-To combat the issues mentioned above, we have developed `Sanitizer`, a plug-in for RepoBee that 
+To combat the issues mentioned above, we have developed `Sanitizer`, a plug-in for RepoBee that
 allows the user to manage their assignments and solutions inside a single repository.
 
 `Sanitizer` adds the commands `sanitize file` and `sanitize repo` that lets the user sanitize
-files and git repositories. `Sanitizer` works by removing or replacing text by going through 
-files as text, looking for a certain markup described below. The most simple usage 
-consists of a start and end marker, where content between these two markers will be 
+files and git repositories. `Sanitizer` works by removing or replacing text by going through
+files as text, looking for a certain markup described below. The most simple usage
+consists of a start and end marker, where content between these two markers will be
 removed, or "sanitized" as it were.
 
-This solution allows teachers to safely work inside a single repository, without the chance of solutions reaching students when creating student repositories (human error not accounted for). 
+This solution allows teachers to safely work inside a single repository, without the chance of solutions reaching students when creating student repositories (human error not accounted for).
 The problem of drift is also removed, and as a bonus, teachers can easily create their assignments
 using solution driven development.
 
@@ -217,7 +217,7 @@ There are some rules for prefixing to observe:
 
 ### The `sanitize file` command
 
-`repobee sanitize file <infile> <outfile>` performs the sanitization operation described below directly on a file `infile` and writes the output to `outfile`. 
+`repobee sanitize file <infile> <outfile>` performs the sanitization operation described below directly on a file `infile` and writes the output to `outfile`.
 
 Running the following command will sanitize `input.txt` (given that it exists) and create the file `sanitized.txt` containing, you guessed it, the sanitized file. `sanitized.txt` will be overwritten if it already exists.
 
@@ -243,11 +243,14 @@ Another important feature is working with branches, `Sanitizer` was essentially 
 
 This is done using the `--target-branch <branch-name>` option. For example, if our repo is checked out to the branch `solutions` (that contains full solutions and `Sanitizer` `markers`), Running:
 
-``` 
+```
 $ repobee sanitize repo --target-branch main
 ```
 
 will sanitize the currently checked out branch (in this case `solutions`) and commit the result to the specified branch, in this case `main`. Successfully using the `--target-branch` feature allows us to essentially retain two concurrent repositories while only having to update one of them should any changes or improvements be made to our course tasks.
+
+#### Pull Requests
+If your target branch is the `main` branch of your repository, it can be quite intimidating to force commit any changes to that branch. Therefore, we have added the `--create-pr-branch` (or `-p`) flag to `Sanitizer` that will create a new branch from the one specified by `--target-branch` and sanitize to the new branch from where a pull request can be created. This way, you can lock your main branch on your git platform, to ensure that your code is safe when using `Sanitizer`
 
 #### Errors / Force
 `Sanitizer` does its best to ensure that nothing breaks while sanitizing. Therefore, when sanitizing a repo, `Sanitizer` will always make sure you have no uncommitted files in the repo as well as no syntax errors in your `Sanitizer` syntax. If you do have an error, `Sanitizer` will _not_ sanitize _anything_ until you fix any errors and run the command again. `Sanitizer` even prevents you from committing if no changes will be made to the repo!
