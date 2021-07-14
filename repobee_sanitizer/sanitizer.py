@@ -99,9 +99,7 @@ class SanitizeRepo(plug.Plugin, plug.cli.Command):
 
             try:
                 errors = _sanitize_repo.sanitize_to_target_branch(
-                    repo_root,
-                    effective_target_branch,
-                    self.commit_message,
+                    repo_root, effective_target_branch, self.commit_message
                 )
             except _sanitize_repo.EmptyCommitError:
                 return plug.Result(
@@ -118,9 +116,16 @@ class SanitizeRepo(plug.Plugin, plug.cli.Command):
                 status=plug.Status.ERROR,
             )
 
+        result_message = "Successfully sanitized repo" + (
+            f" to pull request branch\n\nrun 'git switch "
+            f"{effective_target_branch}' to checkout the branch"
+            if self.create_pr_branch
+            else ""
+        )
+
         return plug.Result(
             name="sanitize-repo",
-            msg="Successfully sanitized repo",
+            msg=result_message,
             status=plug.Status.SUCCESS,
         )
 
