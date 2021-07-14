@@ -135,19 +135,26 @@ class TestSanitizeRepo:
             target_branch + "-pr-" + str(time.time()).split(".")[0]
         )
 
-        run_repobee(
-            f"sanitize repo --target-branch {target_branch}".split(),
-            workdir=fake_repo.path,
-        )
+        fake_repo.repo.git.checkout(b=target_branch)
+        fake_repo.repo.git.commit("--allow-empty", "-m", "initial commit")
+        fake_repo.repo.git.checkout(fake_repo.default_branch)
 
-        run_repobee(
+        result = run_repobee(
             f"sanitize repo --target-branch {target_branch} -p".split(),
             workdir=fake_repo.path,
         )
 
         fake_repo.repo.git.checkout(pr_branch_name)
         fake_repo.repo.git.reset("--hard")
+
         assert_expected_text_in_files(fake_repo.file_infos)
+
+        assert (
+            result.status == plug.Status.SUCCESS
+            and f"Successfully sanitized repo to pull request branch\n\nrun "
+            f"'git switch {pr_branch_name}' to checkout the branch"
+            in result.msg
+        )
 
     def test_target_branch_not_modified_by_pr(
         self, sanitizer_config, fake_repo
