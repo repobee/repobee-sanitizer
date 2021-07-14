@@ -131,13 +131,14 @@ class TestSanitizeRepo:
         pull request can be created
         """
         target_branch = "student-version"
-        pr_branch_name = (
-            target_branch + "-pr-" + str(time.time()).split(".")[0]
-        )
 
         fake_repo.repo.git.checkout(b=target_branch)
         fake_repo.repo.git.commit("--allow-empty", "-m", "initial commit")
         fake_repo.repo.git.checkout(fake_repo.default_branch)
+
+        pr_branch_name = (
+            target_branch + "-pr-" + str(time.time()).split(".")[0]
+        )
 
         result = run_repobee(
             f"sanitize repo --target-branch {target_branch} -p".split(),
