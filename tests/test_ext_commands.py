@@ -3,10 +3,11 @@ import pathlib
 import sys
 import shutil
 import shlex
-import time
 
 import pytest
 import git
+
+from datetime import datetime
 
 import repobee
 from repobee_sanitizer import sanitizer, _fileutils
@@ -137,7 +138,9 @@ class TestSanitizeRepo:
         fake_repo.repo.git.checkout(fake_repo.default_branch)
 
         pr_branch_name = (
-            target_branch + "-pr-" + str(time.time()).split(".")[0]
+            target_branch
+            + "-pr-"
+            + datetime.now().strftime("%Y/%m/%d_%H.%M.%S")
         )
 
         result = run_repobee(

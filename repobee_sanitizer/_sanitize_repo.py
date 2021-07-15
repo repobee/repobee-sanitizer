@@ -6,8 +6,8 @@
 import pathlib
 import shutil
 import tempfile
-import time
 
+from datetime import datetime
 from typing import Optional, List
 
 import repobee_plug as plug
@@ -124,7 +124,9 @@ def create_pr_branch(repo_path: pathlib.Path, target_branch: str) -> str:
         The target branch name with an added timestamp
     """
 
-    pr_branch_name = target_branch + "-pr-" + str(time.time()).split(".")[0]
+    pr_branch_name = (
+        target_branch + "-pr-" + datetime.now().strftime("%Y/%m/%d_%H.%M.%S")
+    )
 
     repo = git.Repo(str(repo_path))
     repo.git.branch(pr_branch_name, target_branch)
