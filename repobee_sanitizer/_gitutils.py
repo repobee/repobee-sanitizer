@@ -25,7 +25,6 @@ def create_pr_branch(repo_path: pathlib.Path, target_branch: str) -> str:
     Returns:
         The target branch name with an added timestamp
     """
-
     pr_branch_name = (
         target_branch + "-pr-" + datetime.now().strftime("%Y/%m/%d_%H.%M.%S")
     )
@@ -36,19 +35,12 @@ def create_pr_branch(repo_path: pathlib.Path, target_branch: str) -> str:
     return pr_branch_name
 
 
-def check_empty_target_branch(
-    repo_path: pathlib.Path, target_branch: str
-) -> bool:
+def branch_exists(repo_path: pathlib.Path, target_branch: str) -> bool:
     repo = git.Repo(str(repo_path))
-    source_branch = repo.head.ref.path
 
-    try:
-        repo.git.symbolic_ref("HEAD", f"refs/heads/{target_branch}")
-        repo.index.diff("HEAD")
-        repo.git.symbolic_ref("HEAD", source_branch)
-    except git.BadName as exc:
-        repo.git.symbolic_ref("HEAD", source_branch)
-        raise EmptyTargetBranchError() from exc
+    existing_branches = [branch.name for branch in repo.branches]
+
+    return target_branch in existing_branches
 
 
 def _git_commit_on_branch(
