@@ -16,6 +16,7 @@ from repobee_sanitizer import (
     _format,
     _sanitize_repo,
     _fileutils,
+    _gitutils,
 )
 
 PLUGIN_NAME = "sanitizer"
@@ -89,7 +90,7 @@ class SanitizeRepo(plug.Plugin, plug.cli.Command):
                 effective_target_branch = (
                     self._resolve_effective_target_branch(repo_root)
                 )
-            except _sanitize_repo.EmptyTargetBranchError:
+            except _gitutils.EmptyTargetBranchError:
                 return plug.Result(
                     name="sanitize-repo",
                     msg=f"Can not create a pull request branch from empty "
@@ -101,7 +102,7 @@ class SanitizeRepo(plug.Plugin, plug.cli.Command):
                 errors = _sanitize_repo.sanitize_to_target_branch(
                     repo_root, effective_target_branch, self.commit_message
                 )
-            except _sanitize_repo.EmptyCommitError:
+            except _gitutils.EmptyCommitError:
                 return plug.Result(
                     name="sanitize-repo",
                     msg="No diff between target branch and sanitized output. "
@@ -131,12 +132,8 @@ class SanitizeRepo(plug.Plugin, plug.cli.Command):
 
     def _resolve_effective_target_branch(self, repo_root: pathlib.Path):
         if self.create_pr_branch:
-            _sanitize_repo.check_empty_target_branch(
-                repo_root, self.target_branch
-            )
-            return _sanitize_repo.create_pr_branch(
-                repo_root, self.target_branch
-            )
+            _gitutils.check_empty_target_branch(repo_root, self.target_branch)
+            return _gitutils.create_pr_branch(repo_root, self.target_branch)
         return self.target_branch
 
 

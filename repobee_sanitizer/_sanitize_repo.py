@@ -7,26 +7,23 @@ import pathlib
 import shutil
 import tempfile
 
-from datetime import datetime
 from typing import Optional, List
 
 import repobee_plug as plug
 import daiquiri
 import git
 
-from repobee_sanitizer import _sanitize, _fileutils, _syntax, _format
+from repobee_sanitizer import (
+    _sanitize,
+    _fileutils,
+    _syntax,
+    _format,
+    _gitutils,
+)
 
 PLUGIN_NAME = "sanitizer"
 
 LOGGER = daiquiri.getLogger(__file__)
-
-
-class EmptyCommitError(plug.PlugError):
-    pass
-
-
-class EmptyTargetBranchError(plug.PlugError):
-    pass
 
 
 def check_repo_state(repo_root) -> Optional[str]:
@@ -97,43 +94,6 @@ def sanitize_files(
     return []
 
 
-def check_empty_target_branch(
-    repo_path: pathlib.Path, target_branch: str
-) -> bool:
-    repo = git.Repo(str(repo_path))
-    source_branch = repo.head.ref.path
-
-    try:
-        repo.git.symbolic_ref("HEAD", f"refs/heads/{target_branch}")
-        repo.index.diff("HEAD")
-        repo.git.symbolic_ref("HEAD", source_branch)
-    except git.BadName as exc:
-        repo.git.symbolic_ref("HEAD", source_branch)
-        raise EmptyTargetBranchError() from exc
-
-
-def create_pr_branch(repo_path: pathlib.Path, target_branch: str) -> str:
-    """Create a new branch from the target_branch that we sanitize to
-    and a pull request can be created from.
-
-    Args:
-        repo_path: Path to the repository
-        target_branch: The branch to create the pull request branch from
-
-    Returns:
-        The target branch name with an added timestamp
-    """
-
-    pr_branch_name = (
-        target_branch + "-pr-" + datetime.now().strftime("%Y/%m/%d_%H.%M.%S")
-    )
-
-    repo = git.Repo(str(repo_path))
-    repo.git.branch(pr_branch_name, target_branch)
-
-    return pr_branch_name
-
-
 def sanitize_to_target_branch(
     repo_path: pathlib.Path, target_branch: str, commit_message: str
 ) -> List[_format.FileWithErrors]:
@@ -154,13 +114,15 @@ def sanitize_to_target_branch(
     with tempfile.TemporaryDirectory() as tmpdir:
         repo_copy_path = pathlib.Path(tmpdir) / "repo"
         shutil.copytree(src=repo_path, dst=repo_copy_path)
-        _clean_repo(repo_copy_path)
+        _gitutils._clean_repo(repo_copy_path)
         file_relpaths = discover_dirty_files(repo_copy_path)
         errors = sanitize_files(repo_copy_path, file_relpaths)
         if errors:
             return errors
-        _git_commit_on_branch(repo_copy_path, target_branch, commit_message)
-        _git_fetch(
+        _gitutils._git_commit_on_branch(
+            repo_copy_path, target_branch, commit_message
+        )
+        _gitutils._git_fetch(
             src_repo_path=repo_copy_path,
             src_branch=target_branch,
             dst_repo_path=repo_path,
@@ -168,36 +130,3 @@ def sanitize_to_target_branch(
         )
 
     return []
-
-
-def _clean_repo(repo_path: pathlib.Path):
-    """Resets working tree and index to HEAD. This is to untracked files as
-    well as uncommitted changes.
-    """
-    repo = git.Repo(str(repo_path))
-    repo.git.reset("--hard")
-    repo.git.clean("-dfx")
-
-
-def _git_commit_on_branch(
-    repo_root: pathlib.Path, target_branch: str, commit_message: str
-):
-    repo = git.Repo(str(repo_root))
-    repo.git.symbolic_ref("HEAD", f"refs/heads/{target_branch}")
-    repo.git.add(".", "--force")
-    try:
-        repo.git.commit("-m", commit_message)
-    except git.GitCommandError as exc:
-        assert "nothing to commit, working tree clean" in str(exc)
-        raise EmptyCommitError() from exc
-
-
-def _git_fetch(
-    src_repo_path: pathlib.Path,
-    src_branch: str,
-    dst_repo_path: pathlib.Path,
-    dst_branch: str,
-):
-    dst_repo = git.Repo(str(dst_repo_path))
-    src_repo_uri = f"file://{src_repo_path.absolute()}"
-    dst_repo.git.fetch(src_repo_uri, f"{src_branch}:{dst_branch}")
