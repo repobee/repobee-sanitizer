@@ -10,10 +10,6 @@ class EmptyCommitError(plug.PlugError):
     pass
 
 
-class EmptyTargetBranchError(plug.PlugError):
-    pass
-
-
 def create_pr_branch(repo_path: pathlib.Path, target_branch: str) -> str:
     """Create a new branch from the target_branch that we sanitize to
     and a pull request can be created from.
