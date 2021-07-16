@@ -208,6 +208,22 @@ class TestSanitizeRepo:
             f"target branch {target_branch}" in result.msg
         )
 
+    def test_pr_without_target_branch_fails(self, sanitizer_config, fake_repo):
+        """Test that sanitizer returns the correct error if the user tries
+        using --create-pull-request without specifying a --target-branch,
+        right now this only happens if the user specifies --no-commit
+        """
+        result = run_repobee(
+            "sanitize repo --no-commit -p".split(),
+            workdir=fake_repo.path,
+        )
+
+        assert (
+            result.status == plug.Status.ERROR
+            and "Can not create a pull request without a target "
+            "branch, please specify --target-branch" in result.msg
+        )
+
     def test_no_commit_default_root(self, sanitizer_config, fake_repo):
 
         run_repobee(
