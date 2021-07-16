@@ -66,18 +66,17 @@ class SanitizeRepo(plug.Plugin, plug.cli.Command):
     create_pr_branch = plug.cli.flag(
         short_name="-p",
         help=(
-            "create and push to a special branch 'sanitizer-pull-request'"
-            "to safely merge using pull requests in github"
+            "create and commit to a special branch 'sanitizer-pull-request'"
+            "to safely merge using pull requests"
         ),
     )
 
     def command(self) -> Optional[plug.Result]:
         repo_root = self.repo_root.absolute()
-        message = _sanitize_repo.check_repo_state(repo_root)
-        if message and not self.force:
-            return plug.Result(
-                name="sanitize-repo", msg=message, status=plug.Status.ERROR
-            )
+
+        input_error = self._validate_input(repo_root)
+        if input_error:
+            return input_error
 
         if self.no_commit:
             LOGGER.info("Executing dry run")
@@ -85,19 +84,9 @@ class SanitizeRepo(plug.Plugin, plug.cli.Command):
             errors = _sanitize_repo.sanitize_files(repo_root, file_relpaths)
         else:
             LOGGER.info(f"Sanitizing repo and updating {self.target_branch}")
-
-            try:
-                effective_target_branch = (
-                    self._resolve_effective_target_branch(repo_root)
-                )
-            except _gitutils.EmptyTargetBranchError:
-                return plug.Result(
-                    name="sanitize-repo",
-                    msg=f"Can not create a pull request branch from empty "
-                    f"target branch {self.target_branch}",
-                    status=plug.Status.ERROR,
-                )
-
+            effective_target_branch = self._resolve_effective_target_branch(
+                repo_root
+            )
             try:
                 errors = _sanitize_repo.sanitize_to_target_branch(
                     repo_root, effective_target_branch, self.commit_message
@@ -130,11 +119,33 @@ class SanitizeRepo(plug.Plugin, plug.cli.Command):
             status=plug.Status.SUCCESS,
         )
 
-    def _resolve_effective_target_branch(self, repo_root: pathlib.Path):
+    def _resolve_effective_target_branch(self, repo_root: pathlib.Path) -> str:
         if self.create_pr_branch:
-            _gitutils.check_empty_target_branch(repo_root, self.target_branch)
             return _gitutils.create_pr_branch(repo_root, self.target_branch)
         return self.target_branch
+
+    def _validate_input(self, repo_root) -> plug.Result:
+        message = _sanitize_repo.check_repo_state(repo_root)
+        if message and not self.force:
+            return plug.Result(
+                name="sanitize-repo", msg=message, status=plug.Status.ERROR
+            )
+
+        if self.create_pr_branch:
+            if not self.target_branch:
+                return plug.Result(
+                    name="sanitize-repo",
+                    msg="Can not create a pull request without a target "
+                    "branch, please specify --target-branch",
+                    status=plug.Status.ERROR,
+                )
+            elif not _gitutils.branch_exists(repo_root, self.target_branch):
+                return plug.Result(
+                    name="sanitize-repo",
+                    msg=f"Can not create a pull request branch from "
+                    f"non-existing target branch {self.target_branch}",
+                    status=plug.Status.ERROR,
+                )
 
 
 class SanitizeFile(plug.Plugin, plug.cli.Command):

@@ -204,7 +204,7 @@ class TestSanitizeRepo:
 
         assert (
             result.status == plug.Status.ERROR
-            and f"Can not create a pull request branch from empty "
+            and f"Can not create a pull request branch from non-existing "
             f"target branch {target_branch}" in result.msg
         )
 
