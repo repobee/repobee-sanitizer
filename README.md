@@ -200,11 +200,9 @@ similar preceding our markers. **This means code can still compile!**
 
 ### There are some rules for prefixing to observe:
 
-Prefixes are valid for a single block, and are defined on the same line as the `REPOBEE-SANITIZER-START` marker of that block. All text found before the `START` marker (stripped fom whitespace) counts as the prefix.
+Prefixes are valid for a single block, and are defined on the same line as the `REPOBEE-SANITIZER-START` marker of that block. The prefix is defined as all characters occurring before the `START` marker, without leading and trailing whitespace. Whitespace _within_ the prefix, such as in `/   /`, counts as part of the prefix.
 
-All lines inside a `REPLACE` block must have the prefix (if used), which is then stripped from the line. All whitespace is preserved when sanitizing and only the first occurrence of a prefix on each line is removed, allowing code comments inside the `REPLACE` block to be preserved.
-
-> Pro-Tip: There can be any amount of whitespace on any line using a prefix, see example 4. This allows easy alignment of code
+If a prefix is defined in a block, all lines in the remainder of the block that contain a marker, as well as all lines in `REPLACE` blocks, must contain the prefix before any other non-whitespace characters. There is no limit to the amount of whitespace that may appear before or after the prefix, however. All whitespace is also preserved when sanitizing, and only the first occurrence of a prefix on each line is removed, allowing code comments inside the `REPLACE` block to be preserved.
 
 ## Commands
 `Sanitizer` supports two main commands: `sanitize file` and `sanitize repo`
