@@ -241,6 +241,9 @@ $ repobee sanitize repo --target-branch main
 
 will sanitize the currently checked out branch (in this case `solutions`) and commit the result to the specified branch, in this case `main`. Successfully using the `--target-branch` feature allows us to essentially retain two concurrent repositories while only having to update one of them should any changes or improvements be made to our course tasks.
 
+#### Pull Requests
+If your target branch is the `main` branch of your repository, it can be quite intimidating to force commit any changes to that branch. Therefore, we have added the `--create-pr-branch` (or `-p`) flag to `Sanitizer` that will create a new branch from the one specified by `--target-branch` and sanitize to the new branch from where a pull request can be created. This way, you can lock your main branch on your git platform, to ensure that your code is safe when using `Sanitizer`
+
 #### Errors / Force
 `Sanitizer` does its best to ensure that nothing breaks while sanitizing. Therefore, when sanitizing a repo, `Sanitizer` will always make sure you have no uncommitted files in the repo as well as no syntax errors in your `Sanitizer` syntax. If you do have an error, `Sanitizer` will _not_ sanitize _anything_ until you fix any errors and run the command again. `Sanitizer` even prevents you from committing if no changes will be made to the repo!
 

@@ -7,6 +7,8 @@ import shlex
 import pytest
 import git
 
+from datetime import datetime
+
 import repobee
 from repobee_sanitizer import sanitizer, _fileutils
 import repobee_plug as plug
@@ -122,6 +124,105 @@ class TestSanitizeRepo:
         fake_repo.repo.git.checkout(target_branch)
         fake_repo.repo.git.reset("--hard")
         assert_expected_text_in_files(fake_repo.file_infos)
+
+    def test_sanitize_to_pull_request_branch(
+        self, sanitizer_config, fake_repo
+    ):
+        """Test that sanitizer will commit to a secondary branch from where a
+        pull request can be created
+        """
+        target_branch = "student-version"
+
+        fake_repo.repo.git.checkout(b=target_branch)
+        fake_repo.repo.git.commit("--allow-empty", "-m", "initial commit")
+        fake_repo.repo.git.checkout(fake_repo.default_branch)
+
+        pr_branch_name = (
+            target_branch
+            + "-pr-"
+            + datetime.now().strftime("%Y/%m/%d_%H.%M.%S")
+        )
+
+        result = run_repobee(
+            f"sanitize repo --target-branch {target_branch} -p".split(),
+            workdir=fake_repo.path,
+        )
+
+        fake_repo.repo.git.checkout(pr_branch_name)
+        fake_repo.repo.git.reset("--hard")
+
+        assert_expected_text_in_files(fake_repo.file_infos)
+
+        assert (
+            result.status == plug.Status.SUCCESS
+            and f"Successfully sanitized repo to pull request branch\n\nrun "
+            f"'git switch {pr_branch_name}' to checkout the branch"
+            in result.msg
+        )
+
+    def test_target_branch_not_modified_by_pr(
+        self, sanitizer_config, fake_repo
+    ):
+        """Test that sanitizer doesnt modify the target branch when
+        sanitizing to PR branch
+        """
+        target_branch = "student-version"
+
+        fake_repo.repo.git.checkout(b=target_branch)
+
+        other_file_contents = (
+            "Some boring\ncontents in a non-interesting\nfile"
+        )
+        other_file = fake_repo.path / "some-other-file.txt"
+        other_file.write_text(other_file_contents)
+        fake_repo.repo.git.add(str(other_file))
+        fake_repo.repo.git.commit("-m", "'Add other file'")
+
+        fake_repo.repo.git.checkout(fake_repo.default_branch)
+
+        run_repobee(
+            f"sanitize repo --target-branch {target_branch} -p".split(),
+            workdir=fake_repo.path,
+        )
+
+        fake_repo.repo.git.checkout(target_branch)
+        other_file_contents_after = other_file.read_text(encoding="utf8")
+        assert other_file_contents == other_file_contents_after
+
+    def test_pr_from_empty_target_branch_return_error(
+        self, sanitizer_config, fake_repo
+    ):
+        """Test that sanitizer returns a plugResult error if there are no
+        commits on the target_branch.
+        """
+        target_branch = "student-version"
+
+        result = run_repobee(
+            f"sanitize repo --target-branch {target_branch} -p".split(),
+            workdir=fake_repo.path,
+        )
+
+        assert (
+            result.status == plug.Status.ERROR
+            and f"Can not create a pull request branch from non-existing "
+            f"target branch {target_branch}" in result.msg
+        )
+
+    def test_pr_without_target_branch_fails(self, sanitizer_config, fake_repo):
+        """Test that sanitizer returns the correct error if the user tries
+        using --create-pull-request without specifying a --target-branch,
+        right now this only happens if the user specifies --no-commit
+        """
+        result = run_repobee(
+            "sanitize repo --no-commit -p".split(),
+            workdir=fake_repo.path,
+        )
+
+        assert (
+            result.status == plug.Status.ERROR
+            and "Can not create a pull request without a target "
+            "branch, please specify --target-branch" in result.msg
+        )
 
     def test_no_commit_default_root(self, sanitizer_config, fake_repo):
 
