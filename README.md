@@ -165,8 +165,7 @@ developed for, it allows us to combine finished solutions with the
 ## Prefixing
 
 Sometimes (usually) we want code that can run, its a good thing then that
-`Sanitizer` blocks can be commented out! Example 2 will produce the
-same output as the following:
+`Sanitizer` blocks can be commented out! Example 2 produces the same output as the following:
 
 ```java
 class StackTest {
@@ -187,7 +186,7 @@ class StackTest {
         assertThat(emptyStackTop, equalTo(value));
         assertThat(stackTop, equalTo(value));
 //REPOBEE-SANITIZER-REPLACE-WITH
-//        fail("Not implemented");
+        //fail("Not implemented");
 //REPOBEE-SANITIZER-END
     }
 }
@@ -199,25 +198,18 @@ class StackTest {
 markers. This way we can have java comments: `//`, python comments: `#` or
 similar preceding our markers. **This means code can still compile!**
 
-There are some rules for prefixing to observe:
+### There are some rules for prefixing to observe:
 
-`Sanitizer`:
+Prefixes are valid for a single block, and are defined on the same line as the `REPOBEE-SANITIZER-START` marker of that block. The prefix is defined as all characters occurring before the `START` marker, without leading and trailing whitespace. Whitespace _within_ the prefix, such as in `/   /`, counts as part of the prefix.
 
-* Determines prefix as any text (including whitespace) that comes before `REPOBEE-SANITIZER-START`
-* Only determines prefix on a block-to-block basis, meaning that the prefix
-  selected at a `START` marker must be used until and including the next `END`
-  marker
-  * This means that all `Sanitizer` blocks can have individual
-    prefixes
-* Code between replace and end markers **MUST** also be prefixed if one is used
-* Prefixes inside `REPLACE-WITH` blocks are removed when sanitizing
+If a prefix is defined in a block, all lines in the remainder of the block that contain a marker, as well as all lines in `REPLACE` blocks, must contain the prefix before any other non-whitespace characters. There is no limit to the amount of whitespace that may appear before or after the prefix, however. All whitespace is also preserved when sanitizing, and only the first occurrence of a prefix on each line is removed, allowing code comments inside the `REPLACE` block to be preserved.
 
 ## Commands
 `Sanitizer` supports two main commands: `sanitize file` and `sanitize repo`
 
 ### The `sanitize file` command
 
-`repobee sanitize file <infile> <outfile>` performs the sanitization operation described below directly on a file `infile` and writes the output to `outfile`.
+`repobee sanitize file <infile> <outfile>` performs the sanitize operation described below directly on a file `infile` and writes the output to `outfile`.
 
 Running the following command will sanitize `input.txt` (given that it exists) and create the file `sanitized.txt` containing, you guessed it, the sanitized file. `sanitized.txt` will be overwritten if it already exists.
 
