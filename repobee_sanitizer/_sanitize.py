@@ -7,7 +7,6 @@
 from repobee_sanitizer import _syntax
 from repobee_sanitizer._syntax import Markers
 
-import re
 from typing import List, Iterable, Optional
 
 
@@ -26,17 +25,20 @@ def sanitize_text(lines: List[str], strip: bool = False) -> Optional[str]:
 
 def _sanitize(lines: List[str], strip: bool = False) -> Iterable[str]:
     keep = True
-    prefix_length = 0
+    prefix = ""
+    in_replace = False
     for line in lines:
         marker = _syntax.contained_marker(line)
         if marker == Markers.START:
-            prefix = re.match(rf"(.*?){Markers.START.value}", line).group(1)
-            prefix_length = len(prefix) if not strip else 0
+            prefix = _syntax.search_prefix(line)
             keep = strip
         elif marker == Markers.REPLACE:
             keep = not strip
+            in_replace = True
         elif marker == Markers.END:
-            prefix_length = 0
             keep = True
+            in_replace = False
         if keep and not marker:
-            yield line[prefix_length:]
+            yield line.replace(
+                prefix, "", 1
+            ) if prefix and in_replace else line

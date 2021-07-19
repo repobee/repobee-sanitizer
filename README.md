@@ -11,22 +11,22 @@
 
 ## Problem
 
-When working with version control systems to maintain code, it is possible to want different versions of a file or even a whole repository. An example of this would be a teacher using GitHub to manage separate template repositories (repo) for code assignments, solutions, and unit tests. 
+When working with version control systems to maintain code, it is possible to want different versions of a file or even a whole repository. An example of this would be a teacher using GitHub to manage separate template repositories (repo) for code assignments, solutions, and unit tests.
 
 Managing solutions and assignments separately becomes an issue when updates are made. If the assignment is updated, the solution and tests also have to be updated, and the teacher has to ensure that all repos are compatible, we call this drift. Working with separate repos simultaneously can be a pain as the teacher has to jump around and make changes in different places, essentially cluttering one's workplace.
 
 ## Solution
 
-To combat the issues mentioned above, we have developed `Sanitizer`, a plug-in for RepoBee that 
+To combat the issues mentioned above, we have developed `Sanitizer`, a plug-in for RepoBee that
 allows the user to manage their assignments and solutions inside a single repository.
 
 `Sanitizer` adds the commands `sanitize file` and `sanitize repo` that lets the user sanitize
-files and git repositories. `Sanitizer` works by removing or replacing text by going through 
-files as text, looking for a certain markup described below. The most simple usage 
-consists of a start and end marker, where content between these two markers will be 
+files and git repositories. `Sanitizer` works by removing or replacing text by going through
+files as text, looking for a certain markup described below. The most simple usage
+consists of a start and end marker, where content between these two markers will be
 removed, or "sanitized" as it were.
 
-This solution allows teachers to safely work inside a single repository, without the chance of solutions reaching students when creating student repositories (human error not accounted for). 
+This solution allows teachers to safely work inside a single repository, without the chance of solutions reaching students when creating student repositories (human error not accounted for).
 The problem of drift is also removed, and as a bonus, teachers can easily create their assignments
 using solution driven development.
 
@@ -165,8 +165,7 @@ developed for, it allows us to combine finished solutions with the
 ## Prefixing
 
 Sometimes (usually) we want code that can run, its a good thing then that
-`Sanitizer` blocks can be commented out! Example 2 will produce the
-same output as the following:
+`Sanitizer` blocks can be commented out! Example 2 produces the same output as the following:
 
 ```java
 class StackTest {
@@ -187,7 +186,7 @@ class StackTest {
         assertThat(emptyStackTop, equalTo(value));
         assertThat(stackTop, equalTo(value));
 //REPOBEE-SANITIZER-REPLACE-WITH
-//        fail("Not implemented");
+        //fail("Not implemented");
 //REPOBEE-SANITIZER-END
     }
 }
@@ -199,25 +198,18 @@ class StackTest {
 markers. This way we can have java comments: `//`, python comments: `#` or
 similar preceding our markers. **This means code can still compile!**
 
-There are some rules for prefixing to observe:
+### There are some rules for prefixing to observe:
 
-`Sanitizer`:
+Prefixes are valid for a single block, and are defined on the same line as the `REPOBEE-SANITIZER-START` marker of that block. The prefix is defined as all characters occurring before the `START` marker, without leading and trailing whitespace. Whitespace _within_ the prefix, such as in `/   /`, counts as part of the prefix.
 
-* Determines prefix as any text (including whitespace) that comes before `REPOBEE-SANITIZER-START`
-* Only determines prefix on a block-to-block basis, meaning that the prefix
-  selected at a `START` marker must be used until and including the next `END`
-  marker
-  * This means that all `Sanitizer` blocks can have individual
-    prefixes
-* Code between replace and end markers **MUST** also be prefixed if one is used
-* Prefixes inside `REPLACE-WITH` blocks are removed when sanitizing
+If a prefix is defined in a block, all lines in the remainder of the block that contain a marker, as well as all lines in `REPLACE` blocks, must contain the prefix before any other non-whitespace characters. There is no limit to the amount of whitespace that may appear before or after the prefix, however. All whitespace is also preserved when sanitizing, and only the first occurrence of a prefix on each line is removed, allowing code comments inside the `REPLACE` block to be preserved.
 
 ## Commands
 `Sanitizer` supports two main commands: `sanitize file` and `sanitize repo`
 
 ### The `sanitize file` command
 
-`repobee sanitize file <infile> <outfile>` performs the sanitization operation described below directly on a file `infile` and writes the output to `outfile`. 
+`repobee sanitize file <infile> <outfile>` performs the sanitize operation described below directly on a file `infile` and writes the output to `outfile`.
 
 Running the following command will sanitize `input.txt` (given that it exists) and create the file `sanitized.txt` containing, you guessed it, the sanitized file. `sanitized.txt` will be overwritten if it already exists.
 
@@ -243,7 +235,7 @@ Another important feature is working with branches, `Sanitizer` was essentially 
 
 This is done using the `--target-branch <branch-name>` option. For example, if our repo is checked out to the branch `solutions` (that contains full solutions and `Sanitizer` `markers`), Running:
 
-``` 
+```
 $ repobee sanitize repo --target-branch main
 ```
 
