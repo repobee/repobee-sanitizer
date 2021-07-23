@@ -85,15 +85,13 @@ class SanitizeRepo(plug.Plugin, plug.cli.Command):
                 if self.no_commit
                 else self._sanitize_to_target_branch()
             )
+            status = plug.Status.SUCCESS
         except _SanitizeError as err:
-            return plug.Result(
-                name="sanitize-repo", msg=err.msg, status=plug.Status.ERROR
-            )
+            result_message = err.msg
+            status = plug.Status.ERROR
 
         return plug.Result(
-            name="sanitize-repo",
-            msg=result_message,
-            status=plug.Status.SUCCESS,
+            name="sanitize-repo", msg=result_message, status=status
         )
 
     def _sanitize_no_commit(self) -> str:
@@ -134,7 +132,7 @@ class SanitizeRepo(plug.Plugin, plug.cli.Command):
         return self.target_branch
 
     def _validate_input(self) -> plug.Result:
-        message = _sanitize_repo.check_repo_state(self.repo_root)
+        message = _gitutils.check_repo_state(self.repo_root)
         if message and not self.force:
             raise _SanitizeError(msg=message)
 
