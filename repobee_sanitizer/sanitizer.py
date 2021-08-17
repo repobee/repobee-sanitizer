@@ -17,16 +17,11 @@ from repobee_sanitizer import (
     _sanitize_repo,
     _fileutils,
     _gitutils,
+    _errorutils,
 )
 
 PLUGIN_NAME = "sanitizer"
 LOGGER = daiquiri.getLogger(__file__)
-
-
-class SanitizeError(plug.PlugError):
-    def __init__(self, msg: str, cause: Optional[Exception] = None):
-        self.msg = msg
-        super().__init__(msg, cause)
 
 
 sanitize_category = plug.cli.category(
@@ -86,14 +81,15 @@ class SanitizeRepo(plug.Plugin, plug.cli.Command):
                 if self.no_commit
                 else self._sanitize_to_target_branch()
             )
-            status = plug.Status.SUCCESS
-        except SanitizeError as err:
-            result_message = err.msg
-            status = plug.Status.ERROR
-
-        return plug.Result(
-            name="sanitize-repo", msg=result_message, status=status
-        )
+            return plug.Result(
+                name="sanitize-repo",
+                msg=result_message,
+                status=plug.Status.SUCCESS,
+            )
+        except _errorutils.SanitizeError as err:
+            return plug.Result(
+                name="sanitize-repo", msg=err.msg, status=plug.Status.ERROR
+            )
 
     def _sanitize_no_commit(self) -> str:
         LOGGER.info("Executing dry run")
@@ -134,14 +130,14 @@ class SanitizeRepo(plug.Plugin, plug.cli.Command):
 
         if self.create_pr_branch:
             if not self.target_branch:
-                raise SanitizeError(
+                raise _errorutils.SanitizeError(
                     msg="Can not create a pull request without a target "
                     "branch, please specify --target-branch"
                 )
             elif not _gitutils.branch_exists(
                 self.repo_root, self.target_branch
             ):
-                raise SanitizeError(
+                raise _errorutils.SanitizeError(
                     msg=f"Can not create a pull request branch from "
                     f"non-existing target branch {self.target_branch}"
                 )

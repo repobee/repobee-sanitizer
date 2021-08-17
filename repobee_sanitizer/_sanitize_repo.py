@@ -7,7 +7,7 @@ import pathlib
 import shutil
 import tempfile
 
-from typing import Optional, List
+from typing import List
 
 import repobee_plug as plug
 import daiquiri
@@ -19,7 +19,7 @@ from repobee_sanitizer import (
     _syntax,
     _format,
     _gitutils,
-    sanitizer,
+    _errorutils,
 )
 
 PLUGIN_NAME = "sanitizer"
@@ -27,7 +27,7 @@ PLUGIN_NAME = "sanitizer"
 LOGGER = daiquiri.getLogger(__file__)
 
 
-def check_repo_state(repo_root, ignore_commit_errors) -> Optional[str]:
+def check_repo_state(repo_root, ignore_commit_errors) -> None:
     try:
         repo = git.Repo(repo_root)
     except git.InvalidGitRepositoryError as exc:
@@ -44,7 +44,7 @@ def check_repo_state(repo_root, ignore_commit_errors) -> Optional[str]:
         message = "There are uncommitted unstaged files in the repo"
 
     if message and not ignore_commit_errors:
-        raise sanitizer.SanitizeError(msg=message + help_message)
+        raise _errorutils.SanitizeError(msg=message + help_message)
 
 
 def discover_dirty_files(
@@ -66,7 +66,7 @@ def discover_dirty_files(
 
 def sanitize_files(
     basedir: pathlib.Path, file_relpaths: List[_fileutils.RelativePath]
-):
+) -> None:
     """Checks the syntax of the provided files and reports any found errors.
     If any errors are found, report errors and exits. If there are no errors,
     then all files are sanitized."""
@@ -79,7 +79,7 @@ def sanitize_files(
             files_with_errors.append(_format.FileWithErrors(relpath, errors))
 
     if files_with_errors:
-        raise sanitizer.SanitizeError(
+        raise _errorutils.SanitizeError(
             msg=_format.format_error_string(files_with_errors)
         )
 
@@ -98,7 +98,7 @@ def sanitize_files(
 
 def sanitize_to_target_branch(
     repo_path: pathlib.Path, target_branch: str, commit_message: str
-):
+) -> None:
     """Create a commit on the target branch of the specified repo with
     sanitized versions of the provided files, without modifying the
     working tree or HEAD of the repo.

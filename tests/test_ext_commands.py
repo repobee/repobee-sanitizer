@@ -214,8 +214,7 @@ class TestSanitizeRepo:
         right now this only happens if the user specifies --no-commit
         """
         result = run_repobee(
-            "sanitize repo --no-commit -p".split(),
-            workdir=fake_repo.path,
+            "sanitize repo --no-commit -p".split(), workdir=fake_repo.path
         )
 
         assert (
