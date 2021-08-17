@@ -7,7 +7,7 @@ import pathlib
 import shutil
 import tempfile
 
-from typing import Optional, List
+from typing import List
 
 import repobee_plug as plug
 import daiquiri
@@ -19,6 +19,7 @@ from repobee_sanitizer import (
     _syntax,
     _format,
     _gitutils,
+    _errorutils,
 )
 
 PLUGIN_NAME = "sanitizer"
@@ -26,7 +27,7 @@ PLUGIN_NAME = "sanitizer"
 LOGGER = daiquiri.getLogger(__file__)
 
 
-def check_repo_state(repo_root) -> Optional[str]:
+def check_repo_state(repo_root, ignore_commit_errors) -> None:
     try:
         repo = git.Repo(repo_root)
     except git.InvalidGitRepositoryError as exc:
@@ -42,7 +43,8 @@ def check_repo_state(repo_root) -> Optional[str]:
     if repo.index.diff(None):
         message = "There are uncommitted unstaged files in the repo"
 
-    return message + help_message if message else None
+    if message and not ignore_commit_errors:
+        raise _errorutils.SanitizeError(msg=message + help_message)
 
 
 def discover_dirty_files(
@@ -64,7 +66,7 @@ def discover_dirty_files(
 
 def sanitize_files(
     basedir: pathlib.Path, file_relpaths: List[_fileutils.RelativePath]
-) -> List[_format.FileWithErrors]:
+) -> None:
     """Checks the syntax of the provided files and reports any found errors.
     If any errors are found, report errors and exits. If there are no errors,
     then all files are sanitized."""
@@ -77,7 +79,9 @@ def sanitize_files(
             files_with_errors.append(_format.FileWithErrors(relpath, errors))
 
     if files_with_errors:
-        return files_with_errors
+        raise _errorutils.SanitizeError(
+            msg=_format.format_error_string(files_with_errors)
+        )
 
     for relpath in file_relpaths:
         content = relpath.read_text_relative_to(basedir).split("\n")
@@ -91,12 +95,10 @@ def sanitize_files(
             )
             LOGGER.info(f"Sanitized {relpath}")
 
-    return []
-
 
 def sanitize_to_target_branch(
     repo_path: pathlib.Path, target_branch: str, commit_message: str
-) -> List[_format.FileWithErrors]:
+) -> None:
     """Create a commit on the target branch of the specified repo with
     sanitized versions of the provided files, without modifying the
     working tree or HEAD of the repo.
@@ -106,9 +108,6 @@ def sanitize_to_target_branch(
         file_relpaths: A list of paths relative to the root of the working
             tree that should be sanitized.
         target_branch: The branch to create the commit on.
-
-    Returns:
-        List of errors if any errors are found, otherwise an empty list.
     """
 
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -116,9 +115,8 @@ def sanitize_to_target_branch(
         shutil.copytree(src=repo_path, dst=repo_copy_path)
         _gitutils._clean_repo(repo_copy_path)
         file_relpaths = discover_dirty_files(repo_copy_path)
-        errors = sanitize_files(repo_copy_path, file_relpaths)
-        if errors:
-            return errors
+        sanitize_files(repo_copy_path, file_relpaths)
+
         _gitutils._git_commit_on_branch(
             repo_copy_path, target_branch, commit_message
         )
@@ -128,5 +126,3 @@ def sanitize_to_target_branch(
             dst_repo_path=repo_path,
             dst_branch=target_branch,
         )
-
-    return []

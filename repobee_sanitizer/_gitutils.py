@@ -33,10 +33,7 @@ def create_pr_branch(repo_path: pathlib.Path, target_branch: str) -> str:
 
 def branch_exists(repo_path: pathlib.Path, target_branch: str) -> bool:
     repo = git.Repo(str(repo_path))
-
-    existing_branches = [branch.name for branch in repo.branches]
-
-    return target_branch in existing_branches
+    return target_branch in [branch.name for branch in repo.branches]
 
 
 def _git_commit_on_branch(
